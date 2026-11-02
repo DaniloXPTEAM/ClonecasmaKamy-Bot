@@ -41,13 +41,13 @@
   function render(){
     const canvas=$("#workflowCanvas"),nodesEl=$("#workflowNodes"),svg=$("#workflowEdges");
     if(!canvas||!nodesEl||!svg)return;
-    nodesEl.innerHTML=state.nodes.map(node=>'<article class="workflow-node '+(state.selected===node.id?"selected":"")+'" data-node="'+escapeHtml(node.id)+'" style="left:'+node.x+'px;top:'+node.y+'px"><button class="node-port input-port" data-port="in" data-id="'+escapeHtml(node.id)+'" title="Entrada"></button><div class="node-head" data-drag="'+escapeHtml(node.id)+'"><span class="node-icon">'+icons[node.type]+'</span><span class="node-title"><b>'+escapeHtml(node.name)+'</b><small>'+escapeHtml(labels[node.type])+'</small></span><span class="node-grip">⠿</span></div><div class="node-summary">'+escapeHtml(nodeSummary(node))+'</div><div class="node-foot"><span>'+escapeHtml(node.type.toUpperCase())+'</span><span class="node-state">● PRONTO</span></div><button class="node-port output-port" data-port="out" data-id="'+escapeHtml(node.id)+'" title="Saída"></button></article>').join("");
+    nodesEl.innerHTML=state.nodes.map(node=>'<article class="workflow-node '+(state.selected===node.id?"selected":"")+'" data-node="'+escapeHtml(node.id)+'" style="left:'+node.x+'px;top:'+node.y+'px"><button class="node-port input-port" data-port="in" data-id="'+escapeHtml(node.id)+'" title="Entrada"></button><div class="node-head" data-drag="'+escapeHtml(node.id)+'"><span class="node-icon">'+icons[node.type]+'</span><span class="node-title"><b>'+escapeHtml(node.name)+'</b><small>'+escapeHtml(labels[node.type])+'</small></span><span class="node-grip">⠿</span></div><div class="node-summary">'+escapeHtml(nodeSummary(node))+'</div><div class="node-foot"><span>'+escapeHtml(node.type.toUpperCase())+'</span><span class="node-state">● PRONTO</span></div>'+(node.type==="condition"?'<button class="node-port output-port condition-true" data-port="out" data-branch="true" data-id="'+escapeHtml(node.id)+'" title="Saída true"></button><button class="node-port output-port condition-false" data-port="out" data-branch="false" data-id="'+escapeHtml(node.id)+'" title="Saída false"></button>':'<button class="node-port output-port" data-port="out" data-id="'+escapeHtml(node.id)+'" title="Saída"></button>')+'</article>').join("");
     const w=Math.max(canvas.clientWidth,1500),h=Math.max(canvas.clientHeight,950);
     svg.setAttribute("viewBox","0 0 "+w+" "+h);svg.setAttribute("width",w);svg.setAttribute("height",h);
     const byId=Object.fromEntries(state.nodes.map(n=>[n.id,n]));
     svg.innerHTML='<defs><marker id="edgeArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#53e58b"/></marker></defs>'+state.edges.map(edge=>{
       const a=byId[edge.source],b=byId[edge.target];if(!a||!b)return "";
-      const x1=a.x+236,y1=a.y+65,x2=b.x,y2=b.y+65,curve=Math.max(45,Math.abs(x2-x1)*.45);
+      const x1=a.x+236,y1=a.y+(edge.sourceHandle==="true"?45:edge.sourceHandle==="false"?88:65),x2=b.x,y2=b.y+65,curve=Math.max(45,Math.abs(x2-x1)*.45);
       return '<path class="workflow-edge" data-edge="'+escapeHtml(edge.id)+'" d="M'+x1+' '+y1+' C'+(x1+curve)+' '+y1+' '+(x2-curve)+' '+y2+' '+x2+' '+y2+'" marker-end="url(#edgeArrow)"/>';
     }).join("");
     $("#canvasEmpty").classList.toggle("hidden",state.nodes.length>0);
@@ -76,15 +76,15 @@
     const node=makeNode(type,90+(state.nodes.length%4)*265,70+(state.nodes.length%5)*165);
     state.nodes.push(node);state.selected=node.id;render();toast(labels[type]+" adicionado.");
   }
-  function connect(source,target){
+  function connect(source,target,sourceHandle){
     if(source===target)return toast("Escolha dois nós diferentes.");
     if(state.edges.some(e=>e.source===source&&e.target===target))return toast("Esses nós já estão conectados.");
-    state.edges.push({id:"edge-"+Date.now().toString(36),source,target});state.connectFrom=null;render();toast("Conexão criada. Salve o workflow para persistir.");
+    state.edges.push({id:"edge-"+Date.now().toString(36),source,target,sourceHandle:sourceHandle||"default"});state.connectFrom=null;render();toast("Conexão criada. Salve o workflow para persistir.");
   }
   function bindCanvas(){
     $("#workflowNodes").addEventListener("click",event=>{
       const port=event.target.closest("[data-port]");
-      if(port){const {id,port:kind}=port.dataset;if(kind==="out"){state.connectFrom=id;$("#workflowStatus").textContent="SELECIONE UMA ENTRADA";toast("Agora clique na entrada do nó de destino.");}else if(state.connectFrom){connect(state.connectFrom,id)}else{toast("Clique primeiro em uma saída verde.");}return}
+      if(port){const {id,port:kind}=port.dataset;if(kind==="out"){state.connectFrom={id,branch:port.dataset.branch||"default"};$("#workflowStatus").textContent="SELECIONE UMA ENTRADA";toast("Agora clique na entrada do nó de destino.");}else if(state.connectFrom){connect(state.connectFrom.id,id,state.connectFrom.branch)}else{toast("Clique primeiro em uma saída verde.");}return}
       const node=event.target.closest("[data-node]");if(node){state.selected=node.dataset.node;render()}
     });
     let drag=null;
@@ -106,16 +106,16 @@
   function renderEdgesOnly(){
     const svg=$("#workflowEdges"),canvas=$("#workflowCanvas"),w=Math.max(canvas.clientWidth,1500),h=Math.max(canvas.clientHeight,950),byId=Object.fromEntries(state.nodes.map(n=>[n.id,n]));
     svg.setAttribute("viewBox","0 0 "+w+" "+h);svg.setAttribute("width",w);svg.setAttribute("height",h);
-    svg.innerHTML='<defs><marker id="edgeArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#53e58b"/></marker></defs>'+state.edges.map(e=>{const a=byId[e.source],b=byId[e.target];if(!a||!b)return "";const x1=a.x+236,y1=a.y+65,x2=b.x,y2=b.y+65,c=Math.max(45,Math.abs(x2-x1)*.45);return '<path class="workflow-edge" data-edge="'+escapeHtml(e.id)+'" d="M'+x1+' '+y1+' C'+(x1+c)+' '+y1+' '+(x2-c)+' '+y2+' '+x2+' '+y2+'" marker-end="url(#edgeArrow)"/>'}).join("");
+    svg.innerHTML='<defs><marker id="edgeArrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto"><path d="M0,0 L0,6 L9,3 z" fill="#53e58b"/></marker></defs>'+state.edges.map(e=>{const a=byId[e.source],b=byId[e.target];if(!a||!b)return "";const x1=a.x+236,y1=a.y+(e.sourceHandle==="true"?45:e.sourceHandle==="false"?88:65),x2=b.x,y2=b.y+65,c=Math.max(45,Math.abs(x2-x1)*.45);return '<path class="workflow-edge" data-edge="'+escapeHtml(e.id)+'" d="M'+x1+' '+y1+' C'+(x1+c)+' '+y1+' '+(x2-c)+' '+y2+' '+x2+' '+y2+'" marker-end="url(#edgeArrow)"/>'}).join("");
   }
   async function loadIntegrations(){
-    const data=await api("/api/automation/integrations");state.integrations=data.items||[];$("#integrationCount").textContent=state.integrations.length+" conectores-modelo";
+    const data=await api("/api/automation/integrations");state.integrations=data.items||[];$("#integrationCount").textContent=state.integrations.length+" conectores / operações";
     renderIntegrations();
   }
   function renderIntegrations(){
     const query=$("#integrationSearch").value.toLowerCase();
     $("#automationIntegrations").innerHTML=state.integrations.filter(x=>(x.name+" "+x.category).toLowerCase().includes(query)).map(x=>'<button class="integration-entry" data-integration="'+escapeHtml(x.id)+'"><span class="integration-mark">'+escapeHtml(x.name.slice(0,2).toUpperCase())+'</span><span><b>'+escapeHtml(x.name)+'</b><small>'+escapeHtml(x.category)+'</small></span><i>＋</i></button>').join("")||"<p class='empty-integrations'>Nenhum serviço encontrado.</p>";
-    document.querySelectorAll("[data-integration]").forEach(button=>button.onclick=()=>{const item=state.integrations.find(x=>x.id===button.dataset.integration);const node=makeNode("http");node.name=item.name+" · API";node.config={method:"GET",url:"https://api.example.com",headers:{},service:item.name,timeoutMs:15000};state.nodes.push(node);state.selected=node.id;render();toast(item.name+" adicionado como modelo HTTP. Configure endpoint e autenticação.")});
+    document.querySelectorAll("[data-integration]").forEach(button=>button.onclick=()=>{const item=state.integrations.find(x=>x.id===button.dataset.integration);const node=makeNode("http");node.name=item.name+" · API";node.config={method:item.method||"GET",url:item.status==="imported"?item.baseUrl+item.path:"https://api.example.com",headers:{},service:item.service||item.name,operation:item.name,timeoutMs:15000};state.nodes.push(node);state.selected=node.id;render();toast(item.status==="imported"?item.name+" adicionada. Revise parâmetros e autenticação.":item.name+" adicionado como modelo HTTP. Configure endpoint e autenticação.")});
   }
   async function loadAiSettings(){
     const data=await api("/api/automation/settings/ai");$("#automationAiBase").value=data.baseUrl;$("#automationAiModel").value=data.model;$("#automationAiState").textContent=data.configured?"Chave configurada e criptografada localmente.":"Configure um provedor compatível com OpenAI.";
@@ -159,6 +159,7 @@
     $("#deleteWorkflow").onclick=async()=>{if(!state.flowId)return blankFlow();if(!confirm("Excluir este workflow e manter o restante dos dados?"))return;await api("/api/automation/workflows/"+state.flowId,{method:"DELETE"});blankFlow();toast("Workflow excluído.")};
     $("#reloadWorkflowRuns").onclick=()=>loadRuns().catch(e=>toast(e.message));
     $("#integrationSearch").oninput=renderIntegrations;
+    $("#importOpenApi").onclick=async()=>{try{const spec=JSON.parse($("#openApiSpec").value);const result=await api("/api/automation/integrations/import",{method:"POST",body:JSON.stringify({name:$("#openApiName").value,baseUrl:$("#openApiBase").value,spec})});await loadIntegrations();toast(result.added+" operações OpenAPI importadas.");}catch(error){toast("Não foi possível importar: "+error.message)}};
     $("#automationAiForm").onsubmit=async e=>{e.preventDefault();try{const body={ai:{baseUrl:$("#automationAiBase").value,model:$("#automationAiModel").value,apiKey:$("#automationAiKey").value}};const res=await api("/api/automation/settings/ai",{method:"PUT",body:JSON.stringify(body)});$("#automationAiKey").value="";$("#automationAiState").textContent=res.settings.configured?"Chave salva e criptografada localmente.":"Não configurado";toast("Provedor de IA salvo.")}catch(error){toast(error.message)}};
   }
   bind();window.KamyAutomation={load,refresh:async()=>{state.loaded=false;await load()}};

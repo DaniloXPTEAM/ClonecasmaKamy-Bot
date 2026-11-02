@@ -206,6 +206,14 @@
             <div class="automation-panel-title integrations-panel-title"><b>Integrações</b><small id="integrationCount">Carregando catálogo…</small></div>
             <input id="integrationSearch" class="integration-search" placeholder="Buscar serviço…">
             <div id="automationIntegrations" class="automation-integrations"></div>
+            <details class="openapi-import">
+              <summary>＋ Importar OpenAPI</summary>
+              <label>Nome do serviço<input id="openApiName" placeholder="Ex.: Minha API"></label>
+              <label>Base URL<input id="openApiBase" placeholder="https://api.exemplo.com"></label>
+              <label>Especificação OpenAPI (JSON)<textarea id="openApiSpec" rows="7" placeholder='{"openapi":"3.0.0","info":{"title":"Minha API"},"paths":{}}'></textarea></label>
+              <button id="importOpenApi" class="secondary-btn" type="button">Importar operações</button>
+              <small>Importa até 500 operações HTTP por arquivo. Credenciais devem usar variáveis de ambiente.</small>
+            </details>
           </aside>
           <div class="automation-workspace">
             <div class="workflow-canvas-head"><span><i></i> EDITOR VISUAL</span><small>Clique na saída verde de um nó e depois na entrada do próximo para conectar.</small><span id="workflowStatus">RASCUNHO</span></div>

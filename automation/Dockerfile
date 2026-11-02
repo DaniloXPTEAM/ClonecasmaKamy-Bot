@@ -1,5 +1,6 @@
 FROM node:22-alpine
 WORKDIR /app
+RUN apk add --no-cache python3
 ENV NODE_ENV=production KAMY_AUTOMATION_HOST=0.0.0.0 KAMY_AUTOMATION_PORT=8766 KAMY_AUTOMATION_DATA_DIR=/data/automation
 COPY automation/dist ./dist
 RUN addgroup -S kamy && adduser -S kamy -G kamy && mkdir -p /data/automation && chown -R kamy:kamy /app /data
