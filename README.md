@@ -1,220 +1,414 @@
 <div align="center">
-  <img src="assets/kamy-mascot.svg" width="132" alt="Mascote oficial Kamy — personagem luminoso em degradê azul, rosa e lilás" />
-  <h1>KAMY BOT</h1>
-  <p><strong>Seu assistente de IA local em uma ilha flutuante.</strong></p>
-  <p>Open source · Individual · Desktop · Local-first</p>
-  <img src="assets/kamy-island-preview.svg" width="100%" alt="Prévia conceitual da ilha flutuante Kamy em tema claro" />
-  <img src="assets/brand-palette.svg" width="100%" alt="Paleta clara Kamy — Ivory, Mist, Mint e Emerald" />
-  <p><a href="#instalação">Instalação</a> · <a href="#ilha-flutuante">Ilha flutuante</a> · <a href="#configuração-da-api">API</a> · <a href="#segurança-e-dados">Segurança</a></p>
+  <img src="assets/kamy-mascot.svg" width="132" alt="Mascote oficial do Kamy" />
+  <h1>KAMY</h1>
+  <p><strong>Personal AI Environment · Ilha flutuante · Agentes · Ferramentas locais</strong></p>
+  <p>Open source · Local-first · Uso individual · Multiplataforma (objetivo)</p>
+  <img src="assets/kamy-island-preview.svg" width="100%" alt="Prévia da interface flutuante do Kamy" />
+  <p><a href="#visão-geral">Visão geral</a> · <a href="#interface-ilha-flutuante">Interface</a> · <a href="#agentes-e-categorias">Agentes</a> · <a href="#system-intelligence-kali-linux">Kali Linux</a> · <a href="#instalação">Instalação</a> · <a href="#roadmap">Roadmap</a></p>
 </div>
 
 ---
 
-## O que é
+## Visão geral
 
-Kamy é representado por um pequeno personagem luminoso em degradê azul, rosa e lilás. O mascote oficial está em [`assets/kamy-mascot.svg`](assets/kamy-mascot.svg) e faz parte da identidade pública do aplicativo.
+**Kamy é um ambiente pessoal de inteligência artificial que reúne modelos de IA, agentes especializados, ferramentas do sistema, integrações MCP, Skills e recursos multimodais em uma interface flutuante.**
 
+A ideia é transformar o Kamy em uma central de comando para o computador: você abre a ilha por um comando ou pela bandeja do sistema, escolhe um agente e conversa com ele. Conforme as permissões concedidas, o agente poderá pesquisar, programar, analisar arquivos, interagir com ferramentas locais e executar fluxos de trabalho.
 
-Kamy Bot é um aplicativo de desktop/local para uma única pessoa. Ele abre como uma pequena ilha flutuante que pode ficar sobre outras janelas. Quando você precisa de todas as ferramentas, expande para tela cheia.
+O Kamy não deve ser apenas um chatbot com vários personagens. A proposta é ser um ambiente extensível no qual **o usuário escolhe os provedores, cria os agentes, conecta suas próprias ferramentas e controla os dados e permissões**.
 
-**Não é SaaS, não é multiusuário, não conecta instalações e não possui painel administrativo ou camada de operador.** Seus agentes, conversas, credenciais, Skills, servidores MCP, conexões e arquivos pertencem à sua instalação local.
+### Princípios do projeto
 
-O backend usa Python/FastAPI em localhost. A janela desktop usa Electron; o navegador continua disponível como alternativa. A identidade visual padrão é **light**, com superfícies claras, texto de alto contraste e detalhes em verde.
+- **Individual e local:** uma instalação para uma pessoa, controlada pelo próprio usuário.
+- **Sem plataforma multiusuário:** não há contas compartilhadas, painel de administrador, operador central ou serviço hospedado obrigatório.
+- **Local-first:** configurações, conversas, memória, Skills, inventário e integrações ficam na máquina do usuário, salvo quando uma função precisa enviar dados a um provedor externo escolhido.
+- **BYOK (Bring Your Own Key):** o usuário configura suas próprias chaves e contas de API.
+- **Extensível:** agentes, provedores, MCPs e Skills podem ser adicionados conforme a necessidade.
+- **Multiplataforma:** Linux, Windows, macOS e Android fazem parte do objetivo do projeto. Nem todos os recursos nativos estão disponíveis em todas as plataformas ainda.
 
-## Ilha flutuante
+> **Estado atual:** o repositório já possui uma aplicação local com backend Python/FastAPI, interface web local, janela desktop Electron, bandeja do sistema, agentes iniciais, integração NVIDIA NIM, armazenamento local, permissões, Skills declarativas e suporte MCP. O inventário abrangente de ferramentas do Kali, backup/restauração portátil, novos provedores, geração multimídia e experiência Android nativa são etapas de evolução descritas neste documento — não devem ser consideradas concluídas apenas por estarem documentadas.
 
-- **Janela compacta:** abre uma janela frameless, redimensionável e sempre no topo quando o sistema operacional permite.
-- **Bandeja do sistema:** o ícone do Kamy permite mostrar/ocultar a ilha, expandir ou encerrar o aplicativo. Fechar a janela oculta o Kamy na bandeja em vez de encerrar o processo.
-- **Escolha do agente:** alterne entre NOVA, PIXEL, SCOUT e seus agentes personalizados diretamente no seletor da ilha.
-- **Tela cheia:** expande a janela para acessar histórico, permissões, extensões, integrações e configurações.
-- **Voz:** o microfone usa reconhecimento de fala do navegador em português brasileiro (pt-BR). A transcrição aparece no campo de mensagem para você revisar antes de enviar.
-- **Atalho para voltar:** use o controle de recolher para retornar à ilha compacta.
-- **Inicialização dupla:** execute `kamy-bot` no terminal ou abra o Kamy pelo ícone da bandeja do sistema.
-- **Fallback:** quando o Electron não estiver instalado ou não for suportado, o launcher abre a interface local no navegador. Use --web para escolher o navegador explicitamente.
-- **Tema inicial:** claro (Ivory/Mist), com painéis brancos, tipografia escura e acentos esmeralda.
+## Interface: ilha flutuante
 
-O reconhecimento de fala depende do suporte do Chromium e das permissões de microfone do sistema. Alguns mecanismos de reconhecimento podem precisar de conexão com a Internet. A voz é convertida em texto; o envio da mensagem continua sob seu controle.
+A interface toma como referência o conceito de uma ilha de desktop, não de um site que o usuário precisa abrir manualmente.
 
-**Linux/Wayland:** alguns compositores Wayland não permitem que aplicativos imponham a posição “sempre no topo”. O Kamy detecta Wayland e evita afirmar que o comportamento está garantido nessa sessão.
+- **Modo compacto:** uma pequena ilha flutuante sobre o desktop.
+- **Modo expandido:** abre o ambiente completo, com conversas, agentes, ferramentas, arquivos e configurações.
+- **Sempre visível:** opção de manter a janela acima das demais, quando o sistema gráfico permitir.
+- **Bandeja do sistema:** mostrar/ocultar, expandir/recolher e encerrar o aplicativo.
+- **Seletor de agentes:** troca rápida entre agentes e categorias.
+- **Voz:** entrada por microfone, com transcrição para a conversa; recursos de voz avançados dependem do suporte do sistema e do provedor.
+- **Anexos:** área para enviar arquivos e mídias para análise.
+- **Tema:** identidade clara com superfícies claras, texto legível e acentos inspirados no mascote oficial azul, ciano, rosa e lilás.
 
-## Recursos
+No Linux, alguns compositores Wayland limitam o controle de posição e comportamento always-on-top. O aplicativo deve informar essas limitações em vez de prometer um comportamento que o compositor não oferece.
 
-- **Agentes:** NOVA (pesquisa), PIXEL (desenvolvimento), SCOUT (navegação) e agentes personalizados, com conversas e workspaces locais separados.
-- **NVIDIA NIM:** Chat Completions, modelo configurável, chave padrão e chaves individuais por agente.
-- **Configurações:** aparência, escala de texto, alto contraste, espaçamento, redução de movimento, provedor, runtime e conexões.
-- **Histórico de ações:** propostas, aprovações, rejeições, execuções e bloqueios.
-- **Permissões:** ferramentas e domínios aprovados por agente; as políticas são revalidadas antes da execução.
-- **Skills:** importar, revisar, ativar, desativar e remover instruções declarativas SKILL.md.
-- **MCP:** servidores locais STDIO e Streamable HTTP, descoberta de ferramentas e execução com aprovação.
-- **OAuth:** Authorization Code + PKCE para conexões HTTP MCP compatíveis. Segredos e tokens ficam criptografados localmente.
-- **Finance / Binance:** cotações públicas, consulta privada de saldos e ordens de teste ou reais com confirmação explícita.
-- **Kamy Intel:** casos locais e registro de evidências, fontes, URLs e datas observadas.
+## Agentes e categorias
 
-### Limites funcionais
+As bolinhas da barra lateral representam **categorias**. O usuário poderá criar, renomear, reorganizar e remover categorias, além de criar quantos agentes pessoais desejar.
 
-- O chat com NVIDIA exige uma chave válida e um identificador de modelo suportado pela NVIDIA.
-- O runtime nativo não habilita Playwright/Chromium headless; use --docker para o navegador de automação isolado.
-- Servidores MCP STDIO executam programas na própria máquina, com as permissões do usuário local. Revise o comando e os argumentos.
-- Skills são instruções em Markdown; o conteúdo importado não é executado como programa.
-- Ordens reais da Binance podem causar perdas. Use Testnet primeiro e uma API key sem permissão de saque.
-- Pesquisa automática na Internet depende de um MCP ou provedor de pesquisa que você configurar.
+Categorias sugeridas:
+
+| Categoria | Exemplos de tarefas |
+|---|---|
+| Development | Programação, revisão de código, debugging, testes e arquitetura |
+| Cybersecurity | Inventário, análise de segurança e testes autorizados |
+| Research | Pesquisa na Internet, comparação de fontes e síntese |
+| Automation | Automação de tarefas e fluxos de trabalho |
+| Finance | Consulta e análise de informações financeiras |
+| Creative | Ideias, imagens, vídeos, áudio e documentos |
+| Custom | Agentes e especialidades definidos pelo usuário |
+
+Cada agente deverá poder ter:
+
+- Nome, avatar, descrição e instruções de sistema próprias.
+- Categoria e identidade visual próprias.
+- Provedor e modelo de IA selecionados.
+- Memória e histórico separados.
+- Skills habilitadas.
+- Servidores MCP e ferramentas autorizados.
+- Acesso a arquivos e diretórios explicitamente permitidos.
+- Permissões de execução e nível de autonomia configuráveis.
+
+Exemplos de agentes que o usuário pode criar:
+
+- **NEMESIS:** especialista em cibersegurança e ferramentas de análise.
+- **PIXEL:** desenvolvimento, programação e revisão de código.
+- **SCOUT:** pesquisa e navegação na Internet.
+- **NOVA:** assistente geral e coordenação de tarefas.
+
+Esses nomes são exemplos de configuração, não agentes obrigatórios nem contas separadas.
+
+## Gerenciador de provedores e modelos de IA
+
+O Kamy deve ser independente de um único fornecedor. O usuário configura suas próprias credenciais e escolhe o modelo padrão ou um modelo por agente.
+
+Provedores desejados:
+
+- NVIDIA NIM.
+- OpenAI API.
+- Google Gemini.
+- Anthropic.
+- OpenRouter.
+- APIs compatíveis com OpenAI.
+- Modelos locais via Ollama e servidores com API compatível.
+
+A arquitetura de provedores deve padronizar mensagens, streaming, ferramentas, anexos e metadados, respeitando as diferenças de cada API. Nem todo modelo oferece visão, áudio, geração de imagem, vídeo ou chamadas de ferramentas.
+
+**Implementação atual:** integração com NVIDIA NIM/Chat Completions e configuração de modelo/chaves. Os demais provedores são objetivos de expansão e devem ser adicionados com adaptadores e testes próprios.
+
+As chaves devem ser armazenadas localmente com criptografia em repouso. O Kamy não deve incluir chaves de API no código, README, logs ou commits.
+
+## System Intelligence: Kali Linux e ferramentas locais
+
+Um dos módulos centrais planejados é o **System Intelligence**, responsável por mapear o ambiente no qual o Kamy está instalado.
+
+### Inventário do sistema
+
+O scanner deverá detectar, quando possível:
+
+- Distribuição, versão do sistema e arquitetura.
+- Executáveis encontrados no PATH.
+- Pacotes instalados via APT/DPKG e outros gerenciadores suportados.
+- Ferramentas Python instaladas em ambientes identificáveis.
+- Aplicativos instalados manualmente e caminhos conhecidos.
+- Versões, localizações, dependências e origem de instalação.
+- Disponibilidade de ferramentas e erros de detecção.
+
+No Kali Linux, o objetivo é reconhecer ferramentas de pentest e análise presentes na instalação — por exemplo, Nmap, Metasploit Framework, Burp Suite, Wireshark, Gobuster e SQLmap — **somente quando estiverem realmente instaladas e forem detectadas**. A lista não deve ser fixa nem presumir que toda instalação Kali possui o mesmo conjunto.
+
+### Biblioteca de ferramentas
+
+A interface deverá apresentar as ferramentas encontradas em categorias, com nome, descrição, versão, caminho, origem e estado de disponibilidade. O usuário poderá pesquisar, filtrar e consultar os detalhes antes de autorizar qualquer execução.
+
+### Execução controlada
+
+- Mostrar o comando e os argumentos antes da execução.
+- Solicitar aprovação para ações sensíveis.
+- Restringir diretórios de trabalho e acesso a arquivos.
+- Registrar comandos, horários, resultados e aprovações em trilha de auditoria.
+- Não executar ferramentas como root por padrão.
+- Não iniciar varreduras ou testes contra terceiros sem autorização explícita e escopo definido.
+
+### Backup e portabilidade do ambiente
+
+O objetivo é permitir levar a configuração do Kamy e reconstruir um ambiente em outro dispositivo.
+
+O backup deve poder incluir:
+
+- Inventário das ferramentas e versões detectadas.
+- Manifestos de pacotes e dependências.
+- Configurações exportáveis e preferências.
+- Definições de agentes, categorias e Skills.
+- Metadados dos MCPs e suas configurações não secretas.
+- Memórias, conversas e workspaces, quando selecionados pelo usuário.
+- Scripts de reconstrução específicos para cada sistema compatível.
+
+**Não é seguro nem confiável copiar cegamente todos os binários instalados.** A estratégia preferida é exportar manifestos, arquivos de configuração selecionados e instruções reproduzíveis de instalação. O restaurador deverá verificar sistema operacional, arquitetura, versões e licenças, apresentar um plano e pedir confirmação antes de instalar pacotes.
+
+Credenciais e tokens devem ser exportados separadamente, criptografados e somente mediante escolha explícita. O usuário deve poder criar um backup sem segredos.
+
+## MCP Manager
+
+O Kamy deve permitir conectar ferramentas externas pelo Model Context Protocol.
+
+Funcionalidades desejadas:
+
+- Adicionar servidor MCP por URL ou configuração local.
+- Suportar Streamable HTTP e STDIO.
+- Configurar comando, argumentos e variáveis de ambiente para servidores STDIO.
+- Autenticar com OAuth quando o servidor oferecer esse fluxo.
+- Descobrir ferramentas e apresentar descrições e schemas.
+- Habilitar ou bloquear cada ferramenta individualmente.
+- Atribuir servidores e ferramentas a agentes específicos.
+- Exibir estado da conexão, erros e logs sanitizados.
+
+Servidores STDIO executam processos na máquina do usuário. Revise comandos, caminhos e variáveis antes de conectar. Tokens e segredos não devem aparecer em logs.
+
+## Skills Manager
+
+Skills são pacotes de instruções e recursos que ensinam o agente a executar tarefas especializadas.
+
+Fluxo desejado:
+
+1. O usuário envia um link de repositório ou arquivo pelo chat.
+2. Kamy identifica a Skill e apresenta sua origem e conteúdo.
+3. Analisa instruções, arquivos, dependências e permissões solicitadas.
+4. Mostra um resumo do que será instalado.
+5. O usuário aprova ou rejeita a instalação.
+6. A Skill fica disponível para os agentes selecionados.
+7. O usuário pode atualizar, desativar ou remover a Skill.
+
+O formato inicial de referência é SKILL.md. Importar uma Skill não deve significar executar automaticamente scripts encontrados no repositório. Código auxiliar exige revisão, isolamento e autorização próprios.
+
+## Multimídia, voz e arquivos
+
+O Kamy deve ser multimodal, tanto para receber conteúdo quanto para gerar resultados quando o provedor conectado oferecer suporte.
+
+| Tipo | Entrada e análise | Criação e saída |
+|---|---|---|
+| Imagens | Enviar imagens para descrição, OCR e análise visual | Gerar imagens por provedores compatíveis |
+| Vídeos | Enviar vídeos ou trechos para análise, quando suportado | Gerar vídeos por serviços compatíveis |
+| Documentos | Ler PDF, DOCX, TXT, CSV e outros formatos suportados | Criar relatórios, PDF, DOCX e planilhas |
+| Áudio | Enviar gravações, transcrever e analisar | Texto para fala e áudio, quando disponível |
+| Código | Analisar arquivos, projetos e logs | Criar e editar arquivos e projetos |
+| Arquivos gerais | Anexar arquivos e selecionar diretórios autorizados | Exportar resultados e pacotes |
+
+O usuário poderá enviar imagens, vídeos e documentos diretamente na conversa. O sistema deve validar tamanho e formato, mostrar o que será enviado ao provedor e respeitar limites de contexto e privacidade.
+
+A disponibilidade de geração e análise depende do modelo, API, formato, tamanho e credenciais configuradas. O Kamy deve informar claramente quando um provedor não suporta determinado recurso.
+
+## Arquitetura proposta
+
+A arquitetura deve manter a interface desktop separada dos serviços de IA e do acesso ao sistema. O backend local coordena agentes, provedores, ferramentas e dados.
+
+```mermaid
+flowchart TB
+    U["Kamy Floating Island"]
+    U --> UI["Desktop Shell / Interface"]
+    UI --> API["Backend local Python / FastAPI"]
+    API --> AG["Agent & Category Manager"]
+    API --> PM["Provider Manager"]
+    API --> MCP["MCP Manager"]
+    API --> SK["Skills Manager"]
+    API --> SI["System Intelligence"]
+    API --> MM["Multimedia & Files"]
+    API --> DB["Local Storage / SQLite"]
+    PM --> CLOUD["NVIDIA · OpenAI · Gemini · Outros"]
+    PM --> LOCAL["Ollama · APIs locais"]
+    MCP --> EXT["MCP HTTP / STDIO"]
+    SI --> OS["Linux · Windows · macOS"]
+    SI --> KALI["Ferramentas Kali / ferramentas locais"]
+```
+
+### Tecnologias
+
+| Camada | Tecnologia / responsabilidade |
+|---|---|
+| Desktop | Electron e integração com bandeja do sistema |
+| Interface | HTML, CSS e JavaScript, com layout responsivo |
+| Backend | Python e FastAPI |
+| Comunicação | HTTP local e WebSocket quando necessário |
+| Persistência | SQLite e diretórios locais |
+| Credenciais | Criptografia em repouso e permissões de arquivo |
+| Integrações | Adaptadores de provedores, MCP e Skills |
+| Sistema | Detectores por plataforma e execução controlada |
+| Distribuição | Pacotes e instaladores próprios por sistema operacional |
+
+O projeto deve continuar individual e local. Não é necessário criar infraestrutura de usuários, contas compartilhadas ou painel administrativo.
+
+## Plataformas
+
+O objetivo é oferecer uma experiência coerente em diferentes dispositivos, adaptando a interface e os recursos às capacidades de cada sistema.
+
+| Plataforma | Objetivo |
+|---|---|
+| Linux (Kali, Debian, Ubuntu e derivados) | Aplicativo desktop com ilha, bandeja e integração com ferramentas locais |
+| Windows | Aplicativo desktop, agentes, APIs, arquivos e integrações locais |
+| macOS | Aplicativo desktop, ilha e integrações compatíveis com as permissões do macOS |
+| Android | Aplicativo móvel com chat, voz, anexos, agentes e conexões com provedores |
+
+### Linux
+
+É a plataforma prioritária para integração profunda com o sistema e inventário de ferramentas Kali. A experiência desktop usa Electron e backend Python local.
+
+### Windows e macOS
+
+O núcleo de agentes, provedores, Skills, MCP e arquivos deve ser reutilizado. Recursos específicos do sistema — inventário, bandeja, atalhos, permissões e empacotamento — precisam de adaptadores próprios.
+
+### Android
+
+O Android precisa de uma interface móvel apropriada, com gerenciamento de ciclo de vida, armazenamento seguro, permissões de microfone e arquivos e conexões de rede. Termux pode ser usado para executar o backend em modo de desenvolvimento ou navegador, mas isso **não equivale a um aplicativo Android nativo** nem oferece a mesma ilha flutuante de desktop.
 
 ## Instalação
 
-### Requisitos
+### Requisitos atuais
 
 - Node.js 18 ou superior.
 - Python 3.11 ou superior.
-- Conexão com a Internet na primeira execução, para baixar as dependências.
-- Electron é instalado como dependência opcional do pacote. Se a plataforma não oferecer esse runtime, o Kamy abre no navegador.
-- Docker Engine/Desktop somente para o modo de automação de navegador.
+- Git.
+- Conexão com a Internet para instalar dependências e usar provedores externos.
+- Docker apenas para o modo de automação de navegador isolado.
 
-### Instalação rápida
+### Linux
 
-Com o repositório clonado em uma pasta chamada Kamy-Bot, execute o comando a partir da pasta que contém esse diretório:
-
-~~~bash
+```bash
 git clone https://github.com/stylesxzz/Kamy-Bot.git
-npm exec --yes --package=./Kamy-Bot -- kamy-bot
-~~~
-
-O comando prepara automaticamente:
-
-1. ~/.kamy-bot/app (ou o diretório informado por KAMY_HOME).
-2. O ambiente virtual Python .venv.
-3. O arquivo .env privado, sem substituir a chave já existente.
-4. As dependências listadas em requirements.txt.
-5. O banco SQLite e os workspaces locais.
-6. O servidor FastAPI em 127.0.0.1.
-7. A ilha flutuante Electron, se o runtime estiver disponível; caso contrário, abre o navegador.
-
-O launcher preserva .env, .venv válido e dados locais ao atualizar os arquivos do app. Se o ambiente virtual estiver incompleto, somente .venv será recriado.
-
-### Comandos
-
-| Comando | Ação |
-|---|---|
-| npm exec --yes --package=./Kamy-Bot -- kamy-bot | Inicia a ilha flutuante (padrão) |
-| npm exec --yes --package=./Kamy-Bot -- kamy-bot --web | Abre a interface no navegador |
-| npm exec --yes --package=./Kamy-Bot -- kamy-bot --no-tray | Desativa o ícone da bandeja do sistema |
-| npm exec --yes --package=./Kamy-Bot -- kamy-bot --no-open | Inicia o servidor sem abrir uma janela |
-| npm exec --yes --package=./Kamy-Bot -- kamy-bot --docker | Inicia com Docker e Playwright isolado |
-| npm exec --yes --package=./Kamy-Bot -- kamy-bot --port 9000 | Usa outra porta local |
-| npm exec --yes --package=./Kamy-Bot -- kamy-bot --setup-only | Prepara .venv e dependências sem iniciar o app |
-| npm exec --yes --package=./Kamy-Bot -- kamy-bot --help | Mostra a ajuda |
-
-Também é possível iniciar diretamente após clonar:
-
-~~~bash
 cd Kamy-Bot
+npm install
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+npm start
+```
+
+Para iniciar pelo launcher do projeto:
+
+```bash
 node ./bin/kamy-bot.js
-~~~
+```
 
-### Docker com navegador de automação
+### Windows (PowerShell)
 
-Em um computador com Docker instalado e iniciado:
+```powershell
+git clone https://github.com/stylesxzz/Kamy-Bot.git
+cd Kamy-Bot
+npm install
+py -3 -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+npm start
+```
 
-~~~bash
-npm exec --yes --package=./Kamy-Bot -- kamy-bot --docker
-~~~
+### macOS
 
-O modo Docker constrói a imagem com Playwright/Chromium e persiste o banco e os workspaces no volume kamy_data. O Docker não é instalado automaticamente pelo Kamy.
-
-### Linux, Windows e macOS
-
-Instale Node.js 18+ e Python 3.11+. Clone o repositório e execute o comando npm da instalação rápida. No Windows, o launcher usa py -3 quando disponível. No Linux, a ilha depende do suporte de janelas do ambiente gráfico.
+```bash
+git clone https://github.com/stylesxzz/Kamy-Bot.git
+cd Kamy-Bot
+npm install
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+npm start
+```
 
 ### Android / Termux
 
-Termux pode executar o backend local:
+O Termux pode ser usado para experimentar o backend e a interface web local. Isso não instala a experiência desktop Electron.
 
-~~~bash
+```bash
 pkg update -y
-pkg install -y nodejs-lts python git
+pkg install -y git nodejs-lts python
 git clone https://github.com/stylesxzz/Kamy-Bot.git
 cd Kamy-Bot
+python -m venv .venv
+source .venv/bin/activate
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+npm install
 node ./bin/kamy-bot.js --web
-~~~
+```
 
-Em Termux sem uma sessão gráfica compatível com Electron, use --web e abra a interface no navegador. A ilha desktop nativa é destinada a ambientes com suporte a janelas de desktop.
+> Os comandos acima documentam o fluxo de desenvolvimento a partir do código-fonte. A experiência e o empacotamento finais de cada plataforma dependem dos respectivos adaptadores e instaladores.
 
-## Configuração da API
+## Configuração de API
 
-Abra **Configurações → NVIDIA NIM padrão** e informe o identificador do modelo NVIDIA e sua NVIDIA API key.
+No aplicativo, abra as configurações do provedor e informe a chave e o identificador do modelo. A chave deve ser guardada localmente, nunca escrita no código ou enviada em issues.
 
-Pressione **Salvar provedor**. O Kamy confirma a gravação no banco local e limpa o campo da chave depois da confirmação. A interface não recebe a chave de volta.
+**Implementação atual:** NVIDIA NIM. Os demais provedores listados neste README representam a arquitetura e o roadmap de expansão.
 
-Você também pode definir uma chave individual por agente. Uma chave particular tem prioridade sobre a chave padrão.
+As credenciais devem ser criptografadas em repouso. Faça backup seguro da chave mestra e dos dados criptografados; perder a chave mestra pode impedir a recuperação das credenciais.
 
-### Persistência da chave mestra
+## Dados e privacidade
 
-O Kamy usa Fernet para criptografar as credenciais em repouso:
+- O backend local deve escutar em loopback por padrão.
+- Não exponha a porta local diretamente à Internet.
+- O usuário escolhe quais dados serão enviados ao provedor de IA.
+- Chaves e tokens devem ser criptografados e omitidos dos logs.
+- O acesso a diretórios deve ser explícito e limitado ao workspace autorizado.
+- A execução de comandos e ferramentas deve ter confirmação e trilha de auditoria conforme o risco.
+- Backups devem permitir excluir credenciais, conversas ou arquivos sensíveis.
+- O Kamy não deve sincronizar dados com outros usuários ou instalações sem uma ação explícita do proprietário.
 
-1. Se KAMY_MASTER_KEY estiver definida, ela é usada.
-2. Caso contrário, o Kamy procura uma chave já existente no .env local.
-3. Se nenhuma estiver disponível, cria uma chave estável em data/.master_key, com permissões de arquivo restritas ao usuário (0600 quando suportado).
+## Segurança em cibersegurança
 
-A chave não é regenerada se o arquivo já existir. **Mantenha a chave mestra e a pasta de dados juntas e faça backup seguro.** Apagar ou substituir a chave pode tornar as credenciais antigas irrecuperáveis.
+As ferramentas de pentest devem ser usadas somente em sistemas próprios ou com autorização explícita. O Kamy deve exigir escopo para ações de reconhecimento e teste, apresentar comandos antes de executar e manter registros de auditoria. Não deve executar varreduras contra alvos arbitrários por iniciativa própria.
 
-Se você já tem credenciais criptografadas, não apague o .env nem data/.master_key para “corrigir” uma falha de gravação.
+## Roadmap
 
-## Dados locais
+O roadmap separa recursos existentes de objetivos de desenvolvimento, evitando confundir planejamento com funcionalidades já entregues.
 
-~~~text
-~/.kamy-bot/
-└── app/
-    ├── .env                  # configurações locais e chave mestra, se definida
-    ├── .venv/                # ambiente virtual Python
-    ├── app.py                # backend FastAPI
-    ├── security.py           # limites locais e chave criptográfica
-    ├── desktop/              # janela Electron e preload seguro
-    ├── static/               # ilha, interface, estilos e scripts
-    ├── assets/               # marca, mascote oficial e identidade visual
-    └── data/
-        ├── .master_key       # chave mestra local gerada automaticamente, se necessária
-        ├── kamy.sqlite3      # conversas, configurações e histórico
-        └── workspaces/       # arquivos isolados por agente
-~~~
+| Área | Estado |
+|---|---|
+| Backend local e interface | Implementado no núcleo atual |
+| Janela desktop Electron e bandeja | Implementado no fluxo desktop atual |
+| Agentes iniciais e armazenamento local | Implementação inicial |
+| NVIDIA NIM | Implementação inicial |
+| Skills declarativas e MCP | Implementação inicial; ampliar cobertura e UX |
+| Categorias personalizáveis e editor completo de agentes | A desenvolver / ampliar |
+| Adaptadores OpenAI, Gemini, Anthropic, OpenRouter e Ollama | Planejado |
+| System Intelligence e inventário abrangente do Kali | Planejado |
+| Backup e restauração portátil de ambientes | Planejado |
+| Permissões por ferramenta, diretório e agente com auditoria completa | A ampliar |
+| Análise multimodal e geração de imagens/vídeos | Planejado por provedor |
+| Geração e análise avançada de documentos e áudio | A ampliar |
+| Aplicativo Android nativo | Planejado |
+| Empacotamento e integração nativa Windows/macOS | A desenvolver e validar |
 
-KAMY_HOME altera o diretório de instalação. KAMY_DATA_DIR altera o local dos dados usado pelo backend.
+### Próximas prioridades
 
-## Segurança e dados
+1. Consolidar o gerenciador de provedores e o sistema de agentes/categorias.
+2. Construir o System Intelligence com inventário seguro e multiplataforma.
+3. Criar backup/restauração por manifestos e configurações portáveis.
+4. Completar o gerenciamento visual de MCP e Skills.
+5. Adicionar anexos, análise e geração multimodal por adaptadores.
+6. Evoluir empacotamento e experiência nativa para Windows, macOS e Android.
 
-- O servidor escuta em 127.0.0.1 por padrão e rejeita solicitações remotas.
-- Não exponha a porta local à Internet.
-- Credenciais NVIDIA, OAuth e Binance são criptografadas com Fernet.
-- Mantenha .env, data/.master_key, banco SQLite e workspaces privados.
-- Dê aos agentes apenas as ferramentas MCP necessárias e revise cada execução.
-- A aprovação não ignora os limites de workspace, domínio e ferramentas.
-- O Electron usa contextIsolation, nodeIntegration: false e um preload restrito.
+## Desenvolvimento e testes
 
-## Desenvolvimento e validação
-
-~~~bash
+```bash
 python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 pytest -q
-node --check bin/kamy-bot.js
-node --check desktop/main.js
-node --check desktop/preload.js
-node --check static/app.js
-node --check static/settings.js
-node --check static/extensions.js
-~~~
+npm install
+npm test
+```
 
-No Windows PowerShell, ative o ambiente com .venv\Scripts\Activate.ps1.
+No Windows PowerShell, ative o ambiente com `.venv\\Scripts\\Activate.ps1`.
 
 ## Identidade visual
 
-- **Mascote:** personagem luminoso azul, rosa e lilás sobre fundo escuro arredondado.
-- **Interface:** tema claro, superfícies Ivory/Mist e tipografia de alto contraste.
-- **Acentos:** lilás, violeta e ciano inspirados no mascote.
-- **Arquivos públicos:** `assets/kamy-mascot.svg`, `assets/kamy-island-preview.svg` e `assets/brand-palette.svg`.
+O mascote oficial é o personagem luminoso azul, ciano, rosa e lilás sobre fundo escuro arredondado. A interface padrão usa tema claro, superfícies off-white, texto de alto contraste e acentos suaves inspirados no mascote.
 
-As imagens deste README fazem parte do repositório e ficam disponíveis publicamente para quem visitar ou clonar o projeto.
+- Mascote: `assets/kamy-mascot.svg`
+- Prévia da ilha: `assets/kamy-island-preview.svg`
+- Paleta: `assets/brand-palette.svg`
 
 ## Licença
 
-Kamy Bot é distribuído sob a licença [MIT](LICENSE).
+Kamy é distribuído sob a licença [MIT](LICENSE).
