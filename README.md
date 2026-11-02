@@ -120,6 +120,16 @@ O catálogo inicial traz **31 serviços e modelos de integração** — incluind
 
 **Importante:** neste primeiro incremento, a conexão operacional compartilhada é o nó HTTP genérico. As entradas do catálogo são modelos/atalhos para configurar essa API; elas não significam que já existam 31 conectores nativos com OAuth e ações específicas. Adaptadores dedicados e centenas de conectores são uma expansão planejada. O nó HTTP permite integrar serviços que ofereçam uma API documentada.
 
+#### Importar APIs pelo OpenAPI
+
+O catálogo também aceita importar uma especificação OpenAPI em JSON pela área **Automações → Importar OpenAPI**. Informe um nome para o serviço, a base URL e o documento OpenAPI. O Kamy extrai operações HTTP suportadas (GET, POST, PUT, PATCH e DELETE) e adiciona cada operação ao catálogo como um modelo que cria um nó HTTP já preenchido com método, base URL e caminho.
+
+- Até 500 operações são aceitas por arquivo; a biblioteca local mantém até 2.000 operações importadas.
+- Parâmetros, cabeçalhos, autenticação e corpo devem ser revisados e configurados no nó antes da execução.
+- O importador não cria automaticamente um fluxo OAuth, nem garante compatibilidade com todos os schemas e autenticações OpenAPI.
+- Para segredos, prefira variáveis de ambiente, como `${ENV:MINHA_API_KEY}`, em vez de inserir tokens no workflow.
+
+
 ### Recursos de IA
 
 O nó AI Agent usa uma API de chat compatível com OpenAI. Configure a URL base, o modelo e a chave no painel Provedor de IA. A chave é criptografada no armazenamento local do motor. Nem todo provedor ou modelo expõe a mesma capacidade; chamadas de ferramentas e anexos multimodais ainda precisam de adaptadores específicos.
