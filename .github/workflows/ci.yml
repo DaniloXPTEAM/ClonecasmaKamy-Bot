@@ -31,7 +31,8 @@ jobs:
       - name: Build and validate TypeScript automation engine
         run: |
           npx --yes --package=typescript@5.8.3 tsc -p automation/tsconfig.json
-          node --check automation/dist/server.js\n      - name: Python syntax check
+          node --check automation/dist/server.js
+      - name: Python syntax check
         run: python -m compileall -q app.py extensions.py security.py tests
       - name: Run tests
         run: pytest -q
