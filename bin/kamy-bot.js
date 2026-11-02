@@ -87,10 +87,10 @@ function openDesktop(url,serverChild,noTray,automationChild){
  child.once("exit",()=>{if(serverChild&&serverChild.exitCode===null)serverChild.kill("SIGINT");if(automationChild&&automationChild.exitCode===null)automationChild.kill("SIGTERM")});
  return child;
 }
-function openInterface(url,noOpen,useWeb,serverChild,noTray){
+function openInterface(url,noOpen,useWeb,serverChild,noTray,automationChild){
  if(noOpen)return null;
  if(useWeb){openBrowser(url);return null}
- return openDesktop(url,serverChild,noTray);
+ return openDesktop(url,serverChild,noTray,automationChild);
 }
 function healthCheck(port){return new Promise(resolve=>{const req=http.get({hostname:"127.0.0.1",port,path:"/api/health",timeout:900},response=>{response.resume();resolve(response.statusCode===200)});req.on("error",()=>resolve(false));req.on("timeout",()=>{req.destroy();resolve(false)})})}
 function automationHealthCheck(port){return new Promise(resolve=>{const req=http.get({hostname:"127.0.0.1",port,path:"/health",timeout:900},response=>{response.resume();resolve(response.statusCode===200)});req.on("error",()=>resolve(false));req.on("timeout",()=>{req.destroy();resolve(false)})})}
