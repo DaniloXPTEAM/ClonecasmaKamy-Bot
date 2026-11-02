@@ -114,6 +114,48 @@ def test_local_automation_engine_workflow_catalog_and_persistence(tmp_path):
         status, error = _request(base + "/api/automation/workflows", "POST", code_flow)
         assert status == 400 and "código local" in error["detail"]
 
+
+        branch_flow = {
+            "name": "Condition branch test", "active": False, "allowCodeExecution": False,
+            "nodes": [
+                {"id": "start", "type": "manual", "name": "Start", "x": 20, "y": 20, "config": {}},
+                {"id": "check", "type": "condition", "name": "Check", "x": 250, "y": 20,
+                 "config": {"path": "state", "operator": "equals", "value": "ok"}},
+                {"id": "yes", "type": "log", "name": "Yes", "x": 500, "y": 20, "config": {}},
+                {"id": "no", "type": "log", "name": "No", "x": 500, "y": 150, "config": {}},
+            ],
+            "edges": [
+                {"id": "c1", "source": "start", "target": "check"},
+                {"id": "c2", "source": "check", "sourceHandle": "true", "target": "yes"},
+                {"id": "c3", "source": "check", "sourceHandle": "false", "target": "no"},
+            ],
+        }
+        status, branch = _request(base + "/api/automation/workflows", "POST", branch_flow)
+        assert status == 201
+        status, branch_run = _request(
+            base + f"/api/automation/workflows/{branch['id']}/run",
+            "POST", {"input": {"state": "ok"}},
+        )
+        assert status == 200 and branch_run["status"] == "success"
+        assert next(n for n in branch_run["nodeRuns"] if n["nodeId"] == "yes")["status"] == "success"
+        assert next(n for n in branch_run["nodeRuns"] if n["nodeId"] == "no")["status"] == "skipped"
+
+        openapi = {
+            "openapi": "3.0.3",
+            "info": {"title": "Sample Service"},
+            "paths": {"/v1/items": {
+                "get": {"operationId": "listItems", "summary": "List items"},
+                "post": {"operationId": "createItem", "summary": "Create item"},
+            }},
+        }
+        status, imported = _request(
+            base + "/api/automation/integrations/import", "POST",
+            {"name": "Sample Service", "baseUrl": "https://api.example.com", "spec": openapi},
+        )
+        assert status == 200 and imported["added"] == 2
+        status, expanded_catalog = _request(base + "/api/automation/integrations")
+        assert sum(item["status"] == "imported" for item in expanded_catalog["items"]) == 2
+
         secret = "automation-test-secret-never-store-plain"
         status, saved_ai = _request(
             base + "/api/automation/settings/ai", "PUT",
