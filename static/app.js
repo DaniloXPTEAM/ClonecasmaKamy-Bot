@@ -323,7 +323,7 @@ function renderPolicies() {
 
 function show(view) {
   currentView = view;
-  ["home", "audit", "policy", "extensions", "settings"].forEach(name => {
+  ["home", "audit", "policy", "extensions", "settings", "automation"].forEach(name => {
     $("#" + name).classList.toggle("hidden", name !== view);
   });
   document.querySelectorAll(".nav").forEach(element => {
@@ -331,11 +331,12 @@ function show(view) {
   });
   $("#crumb").textContent = {
     home: "Conversas", audit: "Histórico", policy: "Permissões",
-    extensions: "Extensões", settings: "Configurações"
+    extensions: "Extensões", settings: "Configurações", automation: "Automation Studio"
   }[view] || view;
   if (view === "audit") audit().catch(error => toast(error.message));
   if (view === "policy") renderPolicies();
   if (view === "settings") window.KamySettings?.render();
+  if (view === "automation") window.KamyAutomation?.load().catch(error => toast(error.message));
 }
 
 document.querySelectorAll("[data-view]").forEach(element => {

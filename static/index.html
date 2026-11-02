@@ -3,12 +3,14 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-  <meta name="theme-color" content="#f6faf6">
+  <meta name="theme-color" content="#080d0a">
   <title>Kamy Bot — Assistente local</title>
   <link rel="stylesheet" href="/static/style.css">
   <link rel="stylesheet" href="/static/extensions.css">
   <link rel="stylesheet" href="/static/brand.css">
   <link rel="stylesheet" href="/static/island.css">
+  <link rel="stylesheet" href="/static/automation.css">
+  <link rel="stylesheet" href="/static/kamy-dark.css">
 </head>
 <body>
   <div class="shell">
@@ -22,6 +24,7 @@
       <button class="nav" data-view="audit">◷ <span>Histórico</span></button>
       <button class="nav" data-view="policy">◇ <span>Permissões</span></button>
       <button class="nav" data-view="extensions">✧ <span>Extensões</span></button>
+      <button class="nav" data-view="automation">⌘ <span>Automações</span></button>
       <button class="nav" data-view="settings">⚙ <span>Configurações</span></button>
       <div class="side-label team-label">SEUS AGENTES <button id="addAgent" type="button">＋</button></div>
       <div id="agentList"></div>
@@ -170,6 +173,68 @@
           </section>
         </div>
       </section>
+    <section id="automation" class="view hidden">
+        <div class="pagehead automation-heading">
+          <div><div class="eyebrow">WORKFLOW STUDIO / NODE ENGINE</div><h1>Automation <em>Studio.</em></h1><p>Monte fluxos visuais, conecte APIs, use IA e execute tarefas na sua própria máquina.</p></div>
+          <div class="automation-heading-actions"><button id="newWorkflow" class="secondary-btn" type="button">＋ Novo fluxo</button><button id="saveWorkflow" class="gradient-btn" type="button">Salvar fluxo</button><button id="runWorkflow" class="gradient-btn" type="button">▶ Executar</button></div>
+        </div>
+        <div class="workflow-toolbar panel">
+          <label>Nome do workflow<input id="workflowName" value="Meu primeiro fluxo" maxlength="100"></label>
+          <label class="workflow-toggle"><input type="checkbox" id="workflowActive"> Ativo</label>
+          <label class="workflow-toggle code-toggle"><input type="checkbox" id="allowWorkflowCode"> Permitir código local confiável</label>
+          <label class="workflow-payload">Entrada de teste<input id="workflowInput" value='{"message":"Olá do Kamy","source":"manual"}' aria-label="JSON de entrada do workflow"></label>
+          <button id="deleteWorkflow" class="danger-btn" type="button">Excluir</button>
+        </div>
+        <div class="automation-layout">
+          <aside class="automation-panel panel">
+            <div class="automation-panel-title"><b>Biblioteca de nós</b><small>Arraste a lógica para seu fluxo</small></div>
+            <div class="node-palette">
+              <div class="palette-label">TRIGGERS</div>
+              <button data-node-type="manual">◉ <span><b>Manual Trigger</b><small>Início sob demanda</small></span></button>
+              <button data-node-type="webhook">↗ <span><b>Webhook</b><small>Receber eventos HTTP</small></span></button>
+              <button data-node-type="schedule">◷ <span><b>Schedule</b><small>Intervalo recorrente</small></span></button>
+              <div class="palette-label">FLOW CONTROL</div>
+              <button data-node-type="condition">◇ <span><b>Condition</b><small>Comparar e decidir</small></span></button>
+              <button data-node-type="transform">⇄ <span><b>Transform</b><small>Mapear dados</small></span></button>
+              <button data-node-type="log">☷ <span><b>Log / Output</b><small>Registrar resultado</small></span></button>
+              <div class="palette-label">ACTIONS</div>
+              <button data-node-type="http">⇧ <span><b>HTTP Request</b><small>REST e qualquer API</small></span></button>
+              <button data-node-type="ai">✧ <span><b>AI Agent</b><small>Modelo compatível</small></span></button>
+              <button data-node-type="javascript">JS <span><b>JavaScript</b><small>Código personalizado</small></span></button>
+              <button data-node-type="python">Py <span><b>Python</b><small>Código personalizado</small></span></button>
+            </div>
+            <div class="automation-panel-title integrations-panel-title"><b>Integrações</b><small id="integrationCount">Carregando catálogo…</small></div>
+            <input id="integrationSearch" class="integration-search" placeholder="Buscar serviço…">
+            <div id="automationIntegrations" class="automation-integrations"></div>
+          </aside>
+          <div class="automation-workspace">
+            <div class="workflow-canvas-head"><span><i></i> EDITOR VISUAL</span><small>Clique na saída verde de um nó e depois na entrada do próximo para conectar.</small><span id="workflowStatus">RASCUNHO</span></div>
+            <div id="workflowCanvas" class="workflow-canvas">
+              <svg id="workflowEdges" class="workflow-edges" aria-hidden="true"></svg>
+              <div id="workflowNodes" class="workflow-nodes"></div>
+              <div class="canvas-empty hidden" id="canvasEmpty">Adicione um nó pela biblioteca à esquerda.</div>
+            </div>
+            <div class="workflow-runs panel">
+              <div class="automation-panel-title"><b>Execuções recentes</b><button id="reloadWorkflowRuns" type="button">Atualizar ↻</button></div>
+              <div id="workflowRunList" class="workflow-run-list"><p>Salve e execute um workflow para ver o histórico.</p></div>
+            </div>
+          </div>
+          <aside class="automation-panel inspector-panel panel">
+            <div class="automation-panel-title"><b>Inspetor</b><small>Configuração do nó selecionado</small></div>
+            <div id="nodeInspector" class="node-inspector"><p>Selecione um nó no canvas para editar nome e parâmetros.</p></div>
+            <div class="inspector-divider"></div>
+            <div class="automation-panel-title"><b>Provedor de IA</b><small>Credencial local criptografada</small></div>
+            <form id="automationAiForm" class="automation-ai-form">
+              <label>Base URL<input id="automationAiBase" value="https://api.openai.com/v1" required></label>
+              <label>Modelo<input id="automationAiModel" value="gpt-4o-mini" required></label>
+              <label>API key<input id="automationAiKey" type="password" autocomplete="new-password" placeholder="Chave do provedor"></label>
+              <small id="automationAiState">Não configurado</small>
+              <button class="secondary-btn" type="submit">Salvar provedor</button>
+            </form>
+            <div class="workflow-security-note"><b>Execução local</b><p>JavaScript e Python executam com as permissões da sua conta. Só habilite código de sua confiança. O modo local não equivale a um sandbox de segurança.</p></div>
+          </aside>
+        </div>
+      </section>
     </main>
   </div>
 
@@ -192,5 +257,6 @@
   <script src="/static/app.js"></script>
   <script src="/static/extensions.js"></script>
   <script src="/static/settings.js"></script>
+  <script src="/static/automation.js"></script>
 </body>
 </html>
