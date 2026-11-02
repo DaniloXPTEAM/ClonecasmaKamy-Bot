@@ -19,12 +19,12 @@ O backend usa Python/FastAPI em localhost. A janela desktop usa Electron; o nave
 
 ## Ilha flutuante
 
-- **Janela compacta:** abre uma janela frameless, redimensionável e sempre no topo quando o sistema operacional permite.
+- **Janela compacta:** abre uma janela frameless, redimensionável e sempre no topo quando o sistema operacional permite.\n- **Bandeja do sistema:** o ícone do Kamy permite mostrar/ocultar a ilha, expandir ou encerrar o aplicativo. Fechar a janela oculta o Kamy na bandeja em vez de encerrar o processo.
 - **Escolha do agente:** alterne entre NOVA, PIXEL, SCOUT e seus agentes personalizados diretamente no seletor da ilha.
 - **Tela cheia:** expande a janela para acessar histórico, permissões, extensões, integrações e configurações.
 - **Voz:** o microfone usa reconhecimento de fala do navegador em português brasileiro (pt-BR). A transcrição aparece no campo de mensagem para você revisar antes de enviar.
 - **Atalho para voltar:** use o controle de recolher para retornar à ilha compacta.
-- **Fallback:** quando o Electron não estiver instalado ou não for suportado, o launcher abre a interface local no navegador. Use --web para escolher o navegador explicitamente.
+- **Inicialização dupla:** execute `kamy-bot` no terminal ou abra o Kamy pelo ícone da bandeja do sistema.\n- **Fallback:** quando o Electron não estiver instalado ou não for suportado, o launcher abre a interface local no navegador. Use --web para escolher o navegador explicitamente.\n- **Tema inicial:** claro, com superfícies brancas/off-white e detalhes verdes.
 
 O reconhecimento de fala depende do suporte do Chromium e das permissões de microfone do sistema. Alguns mecanismos de reconhecimento podem precisar de conexão com a Internet. A voz é convertida em texto; o envio da mensagem continua sob seu controle.
 
@@ -88,7 +88,7 @@ O launcher preserva .env, .venv válido e dados locais ao atualizar os arquivos 
 | Comando | Ação |
 |---|---|
 | npm exec --yes --package=./Kamy-Bot -- kamy-bot | Inicia a ilha flutuante (padrão) |
-| npm exec --yes --package=./Kamy-Bot -- kamy-bot --web | Abre a interface no navegador |
+| npm exec --yes --package=./Kamy-Bot -- kamy-bot --web | Abre a interface no navegador |\n| npm exec --yes --package=./Kamy-Bot -- kamy-bot --no-tray | Desativa o ícone da bandeja do sistema |
 | npm exec --yes --package=./Kamy-Bot -- kamy-bot --no-open | Inicia o servidor sem abrir uma janela |
 | npm exec --yes --package=./Kamy-Bot -- kamy-bot --docker | Inicia com Docker e Playwright isolado |
 | npm exec --yes --package=./Kamy-Bot -- kamy-bot --port 9000 | Usa outra porta local |

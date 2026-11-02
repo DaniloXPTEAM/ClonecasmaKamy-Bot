@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require("node:path");
-const {app, BrowserWindow, ipcMain, session, shell} = require("electron");
+const {app, BrowserWindow, ipcMain, session, shell, Tray, Menu, nativeImage} = require("electron");
 
 const targetUrl = process.argv.find(value => /^http:\/\/(127\.0\.0\.1|localhost):\d+/.test(value));
 if (!targetUrl) {
@@ -15,6 +15,8 @@ const isWayland = process.platform === "linux" &&
 let mainWindow = null;
 let expanded = false;
 let compactBounds = null;
+let tray = null;
+const trayDisabled = process.argv.includes('--no-tray');
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
@@ -60,6 +62,38 @@ function setExpanded(next) {
   return expanded;
 }
 
+
+function showWindow() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
+}
+function toggleWindow() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isVisible()) mainWindow.hide();
+  else showWindow();
+}
+function createTray() {
+  if (trayDisabled || tray) return;
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect x="1" y="1" width="30" height="30" rx="10" fill="#258b45"/><path d="M22.7 8.2H13a6.2 6.2 0 0 0-6.2 6.2v.2a6.2 6.2 0 0 0 6.2 6.2h6.1a1.6 1.6 0 0 1 0 3.2H9.1v-3.1" fill="none" stroke="#fff" stroke-width="2.7" stroke-linecap="round"/><path d="M9.3 23.8H19a6.2 6.2 0 0 0 6.2-6.2v-.2a6.2 6.2 0 0 0-6.2-6.2h-6.1a1.6 1.6 0 0 1 0-3.2h10" fill="none" stroke="#fff" stroke-width="2.7" stroke-linecap="round"/></svg>';
+  const icon = nativeImage.createFromDataURL('data:image/svg+xml;base64,' + Buffer.from(svg).toString('base64'));
+  tray = new Tray(icon);
+  tray.setToolTip('Kamy — Assistente pessoal');
+  const refreshMenu = () => {
+    const visible = Boolean(mainWindow && !mainWindow.isDestroyed() && mainWindow.isVisible());
+    tray.setContextMenu(Menu.buildFromTemplate([
+      {label: visible ? 'Ocultar ilha' : 'Mostrar ilha', click: toggleWindow},
+      {label: expanded ? 'Recolher para ilha' : 'Expandir para tela cheia', click: () => setExpanded(!expanded)},
+      {type: 'separator'},
+      {label: 'Encerrar Kamy', click: () => app.quit()}
+    ]));
+  };
+  refreshMenu();
+  tray.on('click', toggleWindow);
+  tray.on('right-click', refreshMenu);
+  tray.on('double-click', showWindow);
+}
 function createWindow() {
   if (isWayland) {
     console.warn("Kamy: o Wayland pode impedir a janela de ficar sempre no topo.");
@@ -106,6 +140,12 @@ function createWindow() {
     if (mainWindow && !mainWindow.isDestroyed()) mainWindow.show();
   });
 
+  mainWindow.on("close", event => {
+    if (tray && !app.isQuitting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
+  });
   mainWindow.on("closed", () => {
     mainWindow = null;
   });

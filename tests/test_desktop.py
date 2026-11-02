@@ -110,3 +110,16 @@ def test_electron_is_an_optional_pinned_dependency():
     assert package["version"] == "1.3.0"
     assert package["optionalDependencies"]["electron"] == "45.2.1"
     assert "desktop/" in package["files"]
+
+
+def test_desktop_tray_controls_and_optional_disable_are_wired():
+    desktop_main = (PROJECT_ROOT / "desktop" / "main.js").read_text(encoding="utf-8")
+    launcher = (PROJECT_ROOT / "bin" / "kamy-bot.js").read_text(encoding="utf-8")
+    readme = (PROJECT_ROOT / "README.md").read_text(encoding="utf-8")
+    assert "new Tray(icon)" in desktop_main
+    assert "Ocultar ilha" in desktop_main
+    assert "Mostrar ilha" in desktop_main
+    assert "Encerrar Kamy" in desktop_main
+    assert "process.argv.includes('--no-tray')" in desktop_main
+    assert 'args.includes("--no-tray")' in launcher
+    assert "Bandeja do sistema" in readme
