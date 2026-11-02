@@ -33,7 +33,7 @@ services:
       KAMY_MCP_ALLOWED_HOSTS: "${KAMY_MCP_ALLOWED_HOSTS:-}"
     depends_on:
       automation-engine:
-        condition: service_started
+        condition: service_healthy
     volumes:
       - kamy_data:/data
     shm_size: "1gb"

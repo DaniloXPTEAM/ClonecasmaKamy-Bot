@@ -1,5 +1,11 @@
 // @ts-nocheck
-/** Kamy Automation Engine — TypeScript source, executed as compiled Node.js. */
+/** Kamy Automation Engine — TypeScript source, compiled for Node.js. */
+type JsonPrimitive = string | number | boolean | null;
+type JsonValue = JsonPrimitive | JsonValue[] | { [key: string]: JsonValue };
+type NodeKind = "manual" | "webhook" | "schedule" | "http" | "condition" | "transform" | "ai" | "javascript" | "python" | "log";
+interface WorkflowNode { id: string; type: NodeKind; name: string; x: number; y: number; config: Record<string, JsonValue> }
+interface WorkflowEdge { id: string; source: string; target: string; sourceHandle?: string }
+interface Workflow { id: string; name: string; active: boolean; allowCodeExecution: boolean; nodes: WorkflowNode[]; edges: WorkflowEdge[]; createdAt: string; updatedAt: string }
 const http=require("node:http"),fs=require("node:fs"),path=require("node:path"),crypto=require("node:crypto"),vm=require("node:vm"),{spawnSync}=require("node:child_process");
 const PORT=Number(process.env.KAMY_AUTOMATION_PORT||8766),HOST=process.env.KAMY_AUTOMATION_HOST||"127.0.0.1";
 const DATA=path.resolve(process.env.KAMY_AUTOMATION_DATA_DIR||path.join(process.env.KAMY_DATA_DIR||"./data","automation"));
@@ -39,7 +45,7 @@ async function httpNode(c,ctx){
 }
 function runJs(code,input){const logs=[],context={input:JSON.parse(JSON.stringify(input)),output:null,console:{log:(...v)=>logs.push(v.map(String).join(" ").slice(0,2000))}};new vm.Script('"use strict"; output = (function(input){'+String(code||"return input;")+'})(input);',{filename:"kamy-workflow-node.js"}).runInNewContext(context,{timeout:1500});return {output:context.output,logs}}
 function runPy(code,input){const python=process.env.PYTHON||(process.platform==="win32"?"python":"python3"),script="import sys,json\ninput=json.loads(sys.stdin.read() or '{}')\noutput=None\n"+String(code||"output=input")+"\nprint(json.dumps(output,ensure_ascii=False,default=str))";const r=spawnSync(python,["-I","-c",script],{input:JSON.stringify(input),encoding:"utf8",timeout:6000,maxBuffer:300000,env:{PATH:process.env.PATH||"",PYTHONIOENCODING:"utf-8"}});if(r.error)throw r.error;if(r.status!==0)throw Error((r.stderr||"Falha no nó Python").slice(0,3000));try{return JSON.parse(r.stdout.trim().split("\n").pop())}catch{throw Error("Nó Python sem saída JSON válida.")}}
-function encKey(){if(!process.env.KAMY_MASTER_KEY)throw Error("KAMY_MASTER_KEY ausente.");return crypto.createHash("sha256").update(process.env.KAMY_MASTER_KEY).digest()}
+function encKey(){let master=process.env.KAMY_MASTER_KEY;if(!master){const keyFile=path.join(path.dirname(DATA),".master_key");try{master=fs.readFileSync(keyFile,"utf8").trim()}catch{}}if(!master)throw Error("KAMY_MASTER_KEY ausente; confira .env ou data/.master_key.");return crypto.createHash("sha256").update(master).digest()}
 function encrypt(value){if(!value)return null;const iv=crypto.randomBytes(12),c=crypto.createCipheriv("aes-256-gcm",encKey(),iv),data=Buffer.concat([c.update(value,"utf8"),c.final()]);return {iv:iv.toString("base64"),tag:c.getAuthTag().toString("base64"),data:data.toString("base64")}}
 function decrypt(v){if(!v)return "";const d=crypto.createDecipheriv("aes-256-gcm",encKey(),Buffer.from(v.iv,"base64"));d.setAuthTag(Buffer.from(v.tag,"base64"));return Buffer.concat([d.update(Buffer.from(v.data,"base64")),d.final()]).toString("utf8")}
 function getAi(){const v=readJson(SETTINGS,{}).ai||{};return {baseUrl:v.baseUrl||"https://api.openai.com/v1",model:v.model||"gpt-4o-mini",configured:Boolean(v.apiKey)}}
