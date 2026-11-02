@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.4.0 — Automation Studio
+
+- Adiciona motor local de workflows em TypeScript/Node.js, iniciado junto com o Kamy.
+- Adiciona editor visual com nós manuais, webhook, schedule, HTTP, condições, transformação, IA, JavaScript, Python e log.
+- Adiciona histórico de execuções e validação de grafos para impedir ciclos.
+- Adiciona saídas condicionais true/false e importação de operações HTTP a partir de especificações OpenAPI.
+- Adiciona catálogo inicial com 31 modelos de integração via HTTP genérico. Adaptadores nativos OAuth ainda serão desenvolvidos.
+- Adiciona serviço de automação separado no Docker Compose com dados persistentes.
+- Atualiza a identidade visual para preto/grafite com detalhes verdes.
+- Execução de JavaScript/Python é opt-in e destinada a código confiável do próprio usuário; ainda não é sandbox de segurança.
+
+
 ## Cockpit local — atualização
 
 Esta atualização mantém a identidade visual existente e preserva o mascote oficial em `assets/kamy-mascot.svg` e o símbolo reduzido em `assets/kamy-mark.svg`.
