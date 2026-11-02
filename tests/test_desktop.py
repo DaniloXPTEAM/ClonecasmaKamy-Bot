@@ -107,7 +107,7 @@ def test_electron_is_an_optional_pinned_dependency():
     import json
 
     package = json.loads((PROJECT_ROOT / "package.json").read_text(encoding="utf-8"))
-    assert package["version"] == "1.3.0"
+    assert package["version"] == "1.4.0"
     assert package["optionalDependencies"]["electron"] == "45.2.1"
     assert "desktop/" in package["files"]
 
