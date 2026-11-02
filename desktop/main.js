@@ -1,7 +1,7 @@
 "use strict";
 
 const path = require("node:path");
-const {app, BrowserWindow, ipcMain, session, shell} = require("electron");
+const {app, BrowserWindow, ipcMain, session, shell, Tray, Menu, nativeImage} = require("electron");
 
 const targetUrl = process.argv.find(value => /^http:\/\/(127\.0\.0\.1|localhost):\d+/.test(value));
 if (!targetUrl) {
@@ -10,22 +10,24 @@ if (!targetUrl) {
 }
 
 const isWayland = process.platform === "linux" &&
-  (/wayland/i.test(process.env.XDG_SESSION_TYPE || "") ||
-   Boolean(process.env.WAYLAND_DISPLAY));
+  (/wayland/i.test(process.env.XDG_SESSION_TYPE || "") || Boolean(process.env.WAYLAND_DISPLAY));
 let mainWindow = null;
+let tray = null;
 let expanded = false;
 let compactBounds = null;
+let quitting = false;
 
 if (!app.requestSingleInstanceLock()) {
   app.quit();
 } else {
-  app.on("second-instance", () => {
-    if (mainWindow && !mainWindow.isDestroyed()) {
-      if (mainWindow.isMinimized()) mainWindow.restore();
-      mainWindow.show();
-      mainWindow.focus();
-    }
-  });
+  app.on("second-instance", () => showWindow());
+}
+
+function showWindow() {
+  if (!mainWindow || mainWindow.isDestroyed()) return;
+  if (mainWindow.isMinimized()) mainWindow.restore();
+  mainWindow.show();
+  mainWindow.focus();
 }
 
 function setExpanded(next) {
@@ -57,13 +59,32 @@ function setExpanded(next) {
   }
 
   mainWindow.webContents.send("kamy:mode-changed", {expanded});
+  updateTrayMenu();
   return expanded;
 }
 
+function updateTrayMenu() {
+  if (!tray) return;
+  tray.setContextMenu(Menu.buildFromTemplate([
+    {label: "Abrir ilha do Kamy", click: showWindow},
+    {label: expanded ? "Voltar à ilha compacta" : "Expandir para tela cheia", click: () => setExpanded(!expanded)},
+    {type: "separator"},
+    {label: "Encerrar Kamy", click: () => app.quit()}
+  ]));
+}
+
+function createTray() {
+  // A small self-contained SVG avoids depending on a separate icon file at runtime.
+  const svg = '<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect x="1" y="1" width="30" height="30" rx="10" fill="#258b45"/><path d="M21.8 7.5H14a7.8 7.8 0 0 0 0 15.6h3.1l-2.9 3.4h4.1l3.8-4.5a2 2 0 0 0-1.5-3.3H14a3.4 3.4 0 0 1 0-6.8h4.1z" fill="#fff"/><path d="M10.2 24.5H18a7.8 7.8 0 0 0 0-15.6h-3.1l2.9-3.4h-4.1L9.9 10a2 2 0 0 0 1.5 3.3H18a3.4 3.4 0 0 1 0 6.8h-4.1z" fill="#e8f4e8"/></svg>';
+  const icon = nativeImage.createFromDataURL("data:image/svg+xml;charset=utf-8," + encodeURIComponent(svg));
+  tray = new Tray(icon);
+  tray.setToolTip("Kamy — assistente pessoal");
+  tray.on("click", showWindow);
+  updateTrayMenu();
+}
+
 function createWindow() {
-  if (isWayland) {
-    console.warn("Kamy: o Wayland pode impedir a janela de ficar sempre no topo.");
-  }
+  if (isWayland) console.warn("Kamy: o Wayland pode impedir a janela de ficar sempre no topo.");
 
   mainWindow = new BrowserWindow({
     width: 440,
@@ -79,7 +100,8 @@ function createWindow() {
     movable: true,
     fullscreenable: true,
     autoHideMenuBar: true,
-    title: "Kamy Bot",
+    title: "Kamy",
+    icon: path.join(__dirname, "..", "assets", "kamy-mascot.svg"),
     webPreferences: {
       preload: path.join(__dirname, "preload.js"),
       contextIsolation: true,
@@ -97,18 +119,18 @@ function createWindow() {
   });
 
   mainWindow.webContents.on("will-navigate", (event, destination) => {
-    const local = destination.startsWith("http://127.0.0.1:") ||
-      destination.startsWith("http://localhost:");
+    const local = destination.startsWith("http://127.0.0.1:") || destination.startsWith("http://localhost:");
     if (!local) event.preventDefault();
   });
 
-  mainWindow.once("ready-to-show", () => {
-    if (mainWindow && !mainWindow.isDestroyed()) mainWindow.show();
+  mainWindow.once("ready-to-show", showWindow);
+  mainWindow.on("close", event => {
+    if (!quitting) {
+      event.preventDefault();
+      mainWindow.hide();
+    }
   });
-
-  mainWindow.on("closed", () => {
-    mainWindow = null;
-  });
+  mainWindow.on("closed", () => { mainWindow = null; });
 
   mainWindow.loadURL(targetUrl).catch(error => {
     console.error("Não foi possível abrir a interface local do Kamy:", error.message);
@@ -120,35 +142,46 @@ ipcMain.handle("kamy:set-expanded", (event, value) => {
   if (!mainWindow || event.sender !== mainWindow.webContents) return expanded;
   return setExpanded(value);
 });
-
 ipcMain.handle("kamy:toggle-expanded", event => {
   if (!mainWindow || event.sender !== mainWindow.webContents) return expanded;
   return setExpanded(!expanded);
 });
-
 ipcMain.handle("kamy:quit", event => {
   if (mainWindow && event.sender !== mainWindow.webContents) return false;
   app.quit();
+  return true;
+});
+ipcMain.handle("kamy:hide", event => {
+  if (!mainWindow || event.sender !== mainWindow.webContents) return false;
+  mainWindow.hide();
   return true;
 });
 
 app.whenReady().then(() => {
   session.defaultSession.setPermissionRequestHandler((webContents, permission, callback, details) => {
     const origin = details?.requestingUrl || webContents.getURL();
-    const local = origin.startsWith("http://127.0.0.1:") ||
-      origin.startsWith("http://localhost:");
-    const audioOnly = Array.isArray(details?.mediaTypes) && details.mediaTypes.includes("audio") && !details.mediaTypes.includes("video");
+    const local = origin.startsWith("http://127.0.0.1:") || origin.startsWith("http://localhost:");
+    const audioOnly = Array.isArray(details?.mediaTypes) &&
+      details.mediaTypes.includes("audio") && !details.mediaTypes.includes("video");
     callback(local && permission === "media" && audioOnly);
   });
-
   session.defaultSession.setPermissionCheckHandler((_webContents, permission, origin) => {
     return permission === "media" &&
       (origin.startsWith("http://127.0.0.1:") || origin.startsWith("http://localhost:"));
   });
 
+  createTray();
   createWindow();
 });
 
+app.on("before-quit", () => {
+  quitting = true;
+  if (tray) {
+    tray.destroy();
+    tray = null;
+  }
+});
+app.on("activate", showWindow);
 app.on("window-all-closed", () => {
-  app.quit();
+  // Keep the local app and tray alive until the user explicitly chooses Quit.
 });
