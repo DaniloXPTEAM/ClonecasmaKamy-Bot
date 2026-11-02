@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="assets/kamy-mascot.svg" width="132" alt="Mascote Kamy — estrela verde" />
+  <img src="assets/kamy-mascot.svg" width="132" alt="Mascote oficial Kamy — personagem luminoso em degradê azul, rosa e lilás" />
   <h1>KAMY BOT</h1>
   <p><strong>Seu assistente de IA local em uma ilha flutuante.</strong></p>
   <p>Open source · Individual · Desktop · Local-first</p>
@@ -11,6 +11,9 @@
 ---
 
 ## O que é
+
+Kamy é representado por um pequeno personagem luminoso em degradê azul, rosa e lilás. O mascote oficial está em [`assets/kamy-mascot.svg`](assets/kamy-mascot.svg) e faz parte da identidade pública do aplicativo.
+
 
 Kamy Bot é um aplicativo de desktop/local para uma única pessoa. Ele abre como uma pequena ilha flutuante que pode ficar sobre outras janelas. Quando você precisa de todas as ferramentas, expande para tela cheia.
 
@@ -166,7 +169,7 @@ Se você já tem credenciais criptografadas, não apague o .env nem data/.master
     ├── security.py           # limites locais e chave criptográfica
     ├── desktop/              # janela Electron e preload seguro
     ├── static/               # ilha, interface, estilos e scripts
-    ├── assets/               # marca e mascote SVG
+    ├── assets/               # marca, mascote oficial e identidade visual
     └── data/
         ├── .master_key       # chave mestra local gerada automaticamente, se necessária
         ├── kamy.sqlite3      # conversas, configurações e histórico
@@ -202,6 +205,15 @@ node --check static/extensions.js
 ~~~
 
 No Windows PowerShell, ative o ambiente com .venv\Scripts\Activate.ps1.
+
+## Identidade visual
+
+- **Mascote:** personagem luminoso azul, rosa e lilás sobre fundo escuro arredondado.
+- **Interface:** tema claro, superfícies Ivory/Mist e tipografia de alto contraste.
+- **Acentos:** lilás, violeta e ciano inspirados no mascote.
+- **Arquivos públicos:** `assets/kamy-mascot.svg`, `assets/kamy-island-preview.svg` e `assets/brand-palette.svg`.
+
+As imagens deste README fazem parte do repositório e ficam disponíveis publicamente para quem visitar ou clonar o projeto.
 
 ## Licença
 
