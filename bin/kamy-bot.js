@@ -120,7 +120,7 @@ async function main(){
  if(dockerMode){await dockerStart(port);openInterface(url,noOpen,useWeb,null,noTray,null);console.log("Kamy Bot está em execução com Docker: "+url);console.log("Parar: docker compose -f "+path.join(APP_DIR,"docker-compose.yml")+" down");return}
  const python=findPython();loadLocalEnv(envContent);process.env.KAMY_PORT=String(port);const pythonExe=installVenv(python);fs.mkdirSync(path.join(APP_DIR,"data"),{recursive:true});
  if(setupOnly){console.log("Preparação concluída. .venv e requirements.txt estão prontos em "+APP_DIR);return}
- if(await healthCheck(port)){console.log("Kamy Bot já está respondendo em "+url);openInterface(url,noOpen,useWeb,null,noTray);return}
+ const automationChild=await startAutomationEngine();\n if(await healthCheck(port)){console.log("Kamy Bot já está respondendo em "+url);openInterface(url,noOpen,useWeb,null,noTray,automationChild);return}
  const bind=process.env.KAMY_BIND||"127.0.0.1";
  const child=spawn(pythonExe,["-m","uvicorn","app:app","--host",bind,"--port",String(port)],{cwd:APP_DIR,env:process.env,stdio:"inherit"});
  process.once("SIGINT",()=>{child.kill("SIGINT");if(automationChild)automationChild.kill("SIGTERM")});process.once("SIGTERM",()=>{child.kill("SIGTERM");if(automationChild)automationChild.kill("SIGTERM")});

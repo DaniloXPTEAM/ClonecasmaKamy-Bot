@@ -1,4 +1,22 @@
 services:
+  automation-engine:
+    build:
+      context: .
+      dockerfile: automation/Dockerfile
+    container_name: kamy-automation-engine
+    init: true
+    restart: unless-stopped
+    environment:
+      KAMY_MASTER_KEY: "${KAMY_MASTER_KEY:-}"
+      KAMY_AUTOMATION_HOST: "0.0.0.0"
+      KAMY_AUTOMATION_PORT: "8766"
+      KAMY_AUTOMATION_DATA_DIR: /data/automation
+    volumes:
+      - kamy_data:/data
+    security_opt:
+      - no-new-privileges:true
+    cap_drop: [ALL]
+
   kamy-bot:
     build: .
     container_name: kamy-bot
@@ -8,10 +26,14 @@ services:
       - "${KAMY_BIND:-127.0.0.1}:${KAMY_PORT:-8765}:8000"
     environment:
       KAMY_DATA_DIR: /data
-      KAMY_DOCKER_LOCAL: "1"\n      KAMY_AUTOMATION_URL: "http://automation-engine:8766"
+      KAMY_DOCKER_LOCAL: "1"
+      KAMY_AUTOMATION_URL: "http://automation-engine:8766"
       KAMY_BROWSER_ENABLED: "${KAMY_BROWSER_ENABLED:-1}"
       KAMY_MASTER_KEY: "${KAMY_MASTER_KEY:-}"
       KAMY_MCP_ALLOWED_HOSTS: "${KAMY_MCP_ALLOWED_HOSTS:-}"
+    depends_on:
+      automation-engine:
+        condition: service_started
     volumes:
       - kamy_data:/data
     shm_size: "1gb"

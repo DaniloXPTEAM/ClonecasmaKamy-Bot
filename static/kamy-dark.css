@@ -26,4 +26,4 @@ h1{color:#f1faf3}h1 em,h2 em{background:linear-gradient(95deg,#4de581,#b1ffbe 72
 .settings-kicker{color:#65ea91}.settings-field input::placeholder{color:#84998b}
 .desktop-bar{background:#0c130e;border-color:#28412e}.desktop-control{background:#15241a;border-color:#34553d;color:#8cf0a9}
 ::selection{background:#1c6035;color:#fff}:focus-visible{outline:2px solid #5bea8c!important}
-@media(max-width:700px){.sidebar{background:#080e0ef5;border-top-color:#28412e}header{background:#080f0b}</style>
+@media(max-width:700px){.sidebar{background:#080e0ef5;border-top-color:#28412e}header{background:#080f0b}
