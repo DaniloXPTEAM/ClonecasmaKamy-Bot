@@ -4,7 +4,7 @@ const fs=require("node:fs"),path=require("node:path"),os=require("node:os"),cryp
 const {spawn,spawnSync}=require("node:child_process");
 const VERSION="1.3.0",PACKAGE_ROOT=path.resolve(__dirname,"..");
 const INSTALL_ROOT=path.resolve(process.env.KAMY_HOME||path.join(os.homedir(),".kamy-bot")),APP_DIR=path.join(INSTALL_ROOT,"app");
-const RUNTIME_FILES=["app.py","extensions.py","security.py","requirements.txt","requirements-browser.txt",".env.example","Dockerfile","docker-compose.yml","static","assets"];
+const RUNTIME_FILES=["app.py","extensions.py","security.py","requirements.txt","requirements-browser.txt",".env.example","Dockerfile","docker-compose.yml","static","assets","automation"];
 function help(){console.log("Kamy Bot "+VERSION+" — floating local AI companion\n\nUsage:\n  npm exec --yes --package=./Kamy-Bot -- kamy-bot              Install/update and open the floating desktop island\n  npm exec --yes --package=./Kamy-Bot -- kamy-bot --web         Open the local interface in a browser\n  npm exec --yes --package=./Kamy-Bot -- kamy-bot --no-tray     Disable the system tray icon\n  npm exec --yes --package=./Kamy-Bot -- kamy-bot --docker     Start with Docker and isolated Chromium\n  npm exec --yes --package=./Kamy-Bot -- kamy-bot --no-open    Start without opening a window\n  npm exec --yes --package=./Kamy-Bot -- kamy-bot --port 9000  Use a different localhost port\n  npm exec --yes --package=./Kamy-Bot -- kamy-bot --setup-only  Prepare .venv and install dependencies\n  npm exec --yes --package=./Kamy-Bot -- kamy-bot --help       Show this help\n\nThe default desktop mode uses Electron when available. Without Electron (including Termux), the launcher opens the local browser.\nRequirements: Node.js 18+ and Python 3.11+. Docker is required only for --docker.\nLocal files: "+INSTALL_ROOT+"\n")}
 function run(command,args,options){const result=spawnSync(command,args,Object.assign({stdio:"inherit"},options||{}));if(result.error)throw result.error;if(result.status!==0)throw new Error("Command failed (exit "+result.status+"): "+command+" "+args.join(" "))}
 function commandWorks(command,args){const result=spawnSync(command,args||["--version"],{stdio:"ignore"});return !result.error&&result.status===0}
@@ -71,7 +71,7 @@ function openBrowser(url){
 function findElectronBinary(){
  try{const binary=require("electron");return typeof binary==="string"&&fs.existsSync(binary)?binary:null}catch{return null}
 }
-function openDesktop(url,serverChild,noTray){
+function openDesktop(url,serverChild,noTray,automationChild){
  const executable=findElectronBinary();
  const entry=path.join(PACKAGE_ROOT,"desktop","main.js");
  if(!executable||!fs.existsSync(entry)){
@@ -84,7 +84,7 @@ function openDesktop(url,serverChild,noTray){
   console.log("Abrindo a interface local no navegador.");
   openBrowser(url);
  });
- child.once("exit",()=>{if(serverChild&&serverChild.exitCode===null)serverChild.kill("SIGINT")});
+ child.once("exit",()=>{if(serverChild&&serverChild.exitCode===null)serverChild.kill("SIGINT");if(automationChild&&automationChild.exitCode===null)automationChild.kill("SIGTERM")});
  return child;
 }
 function openInterface(url,noOpen,useWeb,serverChild,noTray){
@@ -93,6 +93,17 @@ function openInterface(url,noOpen,useWeb,serverChild,noTray){
  return openDesktop(url,serverChild,noTray);
 }
 function healthCheck(port){return new Promise(resolve=>{const req=http.get({hostname:"127.0.0.1",port,path:"/api/health",timeout:900},response=>{response.resume();resolve(response.statusCode===200)});req.on("error",()=>resolve(false));req.on("timeout",()=>{req.destroy();resolve(false)})})}
+function automationHealthCheck(port){return new Promise(resolve=>{const req=http.get({hostname:"127.0.0.1",port,path:"/health",timeout:900},response=>{response.resume();resolve(response.statusCode===200)});req.on("error",()=>resolve(false));req.on("timeout",()=>{req.destroy();resolve(false)})})}
+async function waitForAutomation(child,port){const started=Date.now();while(Date.now()-started<15000){if(child&&child.exitCode!==null)throw new Error("Kamy Automation Engine encerrou antes de ficar pronto.");if(await automationHealthCheck(port))return;await new Promise(resolve=>setTimeout(resolve,300))}throw new Error("Kamy Automation Engine não respondeu na porta "+port+".")}
+async function startAutomationEngine(){
+ const port=Number(process.env.KAMY_AUTOMATION_PORT||8766),entry=path.join(APP_DIR,"automation","dist","server.js");
+ process.env.KAMY_AUTOMATION_PORT=String(port);process.env.KAMY_AUTOMATION_URL="http://127.0.0.1:"+port;process.env.KAMY_AUTOMATION_DATA_DIR=path.join(APP_DIR,"data","automation");
+ if(await automationHealthCheck(port))return null;
+ if(!fs.existsSync(entry))throw new Error("Motor de automação ausente: "+entry);
+ const child=spawn(process.execPath,[entry],{cwd:APP_DIR,env:process.env,stdio:"inherit"});
+ try{await waitForAutomation(child,port)}catch(error){child.kill("SIGTERM");throw error}
+ return child;
+}
 async function waitForServer(child,port){const started=Date.now();while(Date.now()-started<30000){if(child&&child.exitCode!==null)throw new Error("Kamy encerrou antes de ficar pronto. Confira as mensagens acima.");if(await healthCheck(port))return;await new Promise(resolve=>setTimeout(resolve,500))}throw new Error("O servidor não respondeu em 30 segundos. Confira as mensagens do terminal.")}
 async function dockerStart(port){
  if(!commandWorks("docker",["compose","version"]))throw new Error("Docker Compose não foi encontrado. Instale/inicie Docker Desktop ou Engine, ou execute sem --docker.");
@@ -106,14 +117,14 @@ async function main(){
  copyRuntime();const envContent=prepareEnv(),values=parseEnv(envContent),port=portIndex>=0?Number(args[portIndex+1]):Number(values.KAMY_PORT||8765);
  if(!Number.isInteger(port)||port<1024||port>65535)throw new Error("Porta inválida. Use um valor entre 1024 e 65535.");
  const url="http://127.0.0.1:"+port;
- if(dockerMode){await dockerStart(port);openInterface(url,noOpen,useWeb,null,noTray);console.log("Kamy Bot está em execução com Docker: "+url);console.log("Parar: docker compose -f "+path.join(APP_DIR,"docker-compose.yml")+" down");return}
+ if(dockerMode){await dockerStart(port);openInterface(url,noOpen,useWeb,null,noTray,null);console.log("Kamy Bot está em execução com Docker: "+url);console.log("Parar: docker compose -f "+path.join(APP_DIR,"docker-compose.yml")+" down");return}
  const python=findPython();loadLocalEnv(envContent);process.env.KAMY_PORT=String(port);const pythonExe=installVenv(python);fs.mkdirSync(path.join(APP_DIR,"data"),{recursive:true});
  if(setupOnly){console.log("Preparação concluída. .venv e requirements.txt estão prontos em "+APP_DIR);return}
  if(await healthCheck(port)){console.log("Kamy Bot já está respondendo em "+url);openInterface(url,noOpen,useWeb,null,noTray);return}
  const bind=process.env.KAMY_BIND||"127.0.0.1";
  const child=spawn(pythonExe,["-m","uvicorn","app:app","--host",bind,"--port",String(port)],{cwd:APP_DIR,env:process.env,stdio:"inherit"});
- process.once("SIGINT",()=>child.kill("SIGINT"));process.once("SIGTERM",()=>child.kill("SIGTERM"));
- await waitForServer(child,port);console.log("Kamy Bot pronto: "+url);console.log("Parar o servidor: Ctrl+C");openInterface(url,noOpen,useWeb,child,noTray);
- await new Promise((resolve,reject)=>{child.once("exit",code=>code===0?resolve():reject(new Error("Kamy encerrou com código "+code)));child.once("error",reject)});
+ process.once("SIGINT",()=>{child.kill("SIGINT");if(automationChild)automationChild.kill("SIGTERM")});process.once("SIGTERM",()=>{child.kill("SIGTERM");if(automationChild)automationChild.kill("SIGTERM")});
+ await waitForServer(child,port);console.log("Kamy Bot pronto: "+url);console.log("Parar o servidor: Ctrl+C");openInterface(url,noOpen,useWeb,child,noTray,automationChild);
+ try{await new Promise((resolve,reject)=>{child.once("exit",code=>code===0?resolve():reject(new Error("Kamy encerrou com código "+code)));child.once("error",reject)})}finally{if(automationChild&&automationChild.exitCode===null)automationChild.kill("SIGTERM")}
 }
 main().catch(error=>{console.error("\nKamy Bot: "+error.message);process.exitCode=1});

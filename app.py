@@ -118,6 +118,20 @@ async def shutdown():
  if browser_engine: await browser_engine.stop()
 @app.get("/",response_class=HTMLResponse)
 def home():return (ROOT/"static/index.html").read_text()
+
+AUTOMATION_URL=os.getenv("KAMY_AUTOMATION_URL","http://127.0.0.1:8766").rstrip("/")
+
+@app.api_route("/api/automation/{automation_path:path}",methods=["GET","POST","PUT","DELETE"])
+async def automation_proxy(automation_path:str,request:Request):
+ target=AUTOMATION_URL+"/api/automation/"+automation_path
+ if request.url.query: target+="?"+request.url.query
+ try:
+  async with httpx.AsyncClient(timeout=40.0) as client:
+   upstream=await client.request(request.method,target,content=await request.body(),headers={"Content-Type":request.headers.get("content-type","application/json")})
+ except httpx.RequestError as error:
+  raise HTTPException(503,"O motor Node.js de automação não está disponível. Reinicie o Kamy e confira o serviço local.") from error
+ return Response(content=upstream.content,status_code=upstream.status_code,media_type=upstream.headers.get("content-type","application/json"))
+
 @app.get("/api/health")
 def health():return {"ok":True,"name":"Kamy Bot","provider":"NVIDIA NIM"}
 DEFAULT_MODEL="meta/llama-3.3-70b-instruct"

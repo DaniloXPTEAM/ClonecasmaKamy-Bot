@@ -248,3 +248,12 @@ def test_existing_fernet_values_roundtrip(client, monkeypatch):
     encrypted = kamy.protect_secret(original)
     assert encrypted.startswith("fernet:")
     assert kamy.reveal_secret(encrypted) == original
+
+
+
+def test_automation_proxy_reports_missing_node_engine(client, monkeypatch):
+    http, kamy = client
+    monkeypatch.setattr(kamy, "AUTOMATION_URL", "http://127.0.0.1:1")
+    response = http.get("/api/automation/workflows")
+    assert response.status_code == 503
+    assert "motor Node.js" in response.json()["detail"]
