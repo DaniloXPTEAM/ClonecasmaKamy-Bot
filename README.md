@@ -79,6 +79,79 @@ Exemplos de agentes que o usuário pode criar:
 
 Esses nomes são exemplos de configuração, não agentes obrigatórios nem contas separadas.
 
+## Automation Studio — workflow visual
+
+O **Automation Studio** adiciona ao Kamy um construtor visual de automações inspirado em ferramentas de workflow como Zapier e n8n. Ele utiliza um motor local em Node.js/TypeScript, separado do backend Python principal e integrado pela API local do Kamy.
+
+### Editor por nós
+
+No painel **Automações**, crie um workflow e adicione nós pela biblioteca. Cada cartão pode ser movido no canvas. Para conectar dois nós, clique na saída verde do nó de origem e depois na entrada do nó de destino. Clique em uma conexão para removê-la.
+
+Tipos de nós disponíveis no motor inicial:
+
+| Nó | Função |
+|---|---|
+| Manual Trigger | Iniciar o fluxo manualmente |
+| Webhook Trigger | Receber payloads HTTP locais |
+| Schedule Trigger | Repetir o fluxo em intervalos configuráveis |
+| HTTP Request | Fazer requisições REST/HTTP a serviços e APIs |
+| Condition | Comparar valores e produzir um resultado true/false |
+| Transform | Mapear e transformar dados JSON |
+| AI Agent | Chamar um endpoint de chat compatível com OpenAI |
+| JavaScript | Executar código escrito pelo usuário |
+| Python | Executar código escrito pelo usuário |
+| Log / Output | Registrar dados de saída |
+
+O motor valida IDs, conexões e ciclos antes de salvar. As execuções geram histórico por workflow, incluindo status e resultado dos nós.
+
+### Dados e expressões
+
+Os nós podem referenciar dados anteriores com expressões simples:
+
+- `{{input.campo}}` — entrada recebida pelo nó.
+- `{{trigger.campo}}` — payload inicial do gatilho.
+- `{{steps.ID_DO_NO.campo}}` — saída de um nó anterior.
+
+O nó HTTP permite configurar método, URL, cabeçalhos, corpo JSON e timeout. Para não gravar tokens em workflows, use referências de ambiente nos valores de cabeçalho, por exemplo `${ENV:MEU_TOKEN_API}`, e defina a variável no ambiente local do Kamy.
+
+### Biblioteca de integrações
+
+O catálogo inicial traz **31 serviços e modelos de integração** — incluindo GitHub, GitLab, Slack, Discord, Telegram, Gmail, Google Sheets, Drive, Notion, Airtable, Trello, Linear, Jira, HubSpot, Salesforce, Stripe, Shopify, bancos de dados, S3, Dropbox, OpenAI, Gemini, Anthropic, NVIDIA NIM e Ollama.
+
+**Importante:** neste primeiro incremento, a conexão operacional compartilhada é o nó HTTP genérico. As entradas do catálogo são modelos/atalhos para configurar essa API; elas não significam que já existam 31 conectores nativos com OAuth e ações específicas. Adaptadores dedicados e centenas de conectores são uma expansão planejada. O nó HTTP permite integrar serviços que ofereçam uma API documentada.
+
+### Recursos de IA
+
+O nó AI Agent usa uma API de chat compatível com OpenAI. Configure a URL base, o modelo e a chave no painel Provedor de IA. A chave é criptografada no armazenamento local do motor. Nem todo provedor ou modelo expõe a mesma capacidade; chamadas de ferramentas e anexos multimodais ainda precisam de adaptadores específicos.
+
+### Código personalizado e segurança
+
+Os nós JavaScript e Python permitem escrever lógica avançada diretamente no fluxo. Para salvá-los, ative **Permitir código local confiável**. Ao executar um workflow com código, o Kamy apresenta uma confirmação.
+
+Esses nós são para código de autoria/confiável do próprio usuário e executam com as permissões da conta local. O runtime atual não é um sandbox de segurança. Não habilite código de origem desconhecida. Para executar código de terceiros futuramente, será necessário adicionar isolamento real por processo/container e limites de recursos.
+
+### Webhooks e agendamento
+
+- Webhook local: `POST /api/automation/webhooks/ID_DO_WORKFLOW`. Ative o workflow e inclua um nó Webhook Trigger.
+- Schedule: configure `intervalSeconds` no JSON do nó. O intervalo mínimo é 30 segundos e o máximo é 24 horas.
+- Manual: use o botão Executar e informe um payload JSON de teste.
+
+O webhook é servido pelo backend local do Kamy. Para receber eventos da Internet, o usuário precisará configurar conscientemente um túnel ou proxy seguro; não exponha a porta local diretamente.
+
+### Arquitetura e Docker
+
+O motor TypeScript é iniciado automaticamente pelo launcher nativo, por padrão na porta local 8766. O FastAPI principal encaminha as rotas `/api/automation/*` para esse serviço, mantendo a interface na mesma origem.
+
+Com Docker Compose, o serviço `automation-engine` roda em um container Node separado, sem publicar a porta do motor para a rede host. O backend Kamy acessa o motor pela rede interna do Compose e ambos usam o volume local de dados.
+
+```bash
+docker compose up --build -d
+docker compose logs -f kamy-bot automation-engine
+docker compose down
+```
+
+As definições de workflow, o histórico de execuções e as configurações de IA ficam em `data/automation` (ou no volume Docker `kamy_data`). O motor de automação é local e individual; não cria usuários compartilhados nem depende de uma plataforma hospedada.
+
 ## Gerenciador de provedores e modelos de IA
 
 O Kamy deve ser independente de um único fornecedor. O usuário configura suas próprias credenciais e escolhe o modelo padrão ou um modelo por agente.
@@ -407,7 +480,7 @@ No Windows PowerShell, ative o ambiente com `.venv\\Scripts\\Activate.ps1`.
 
 ## Identidade visual
 
-O mascote oficial é o personagem luminoso azul, ciano, rosa e lilás sobre fundo escuro arredondado. A interface padrão usa tema claro, superfícies off-white, texto de alto contraste e acentos suaves inspirados no mascote.
+O mascote oficial é o personagem luminoso azul, ciano, rosa e lilás sobre fundo escuro arredondado. A interface do Kamy usa tema **preto/grafite com detalhes verdes**, texto de alto contraste, superfícies escuras e estados de execução em verde.
 
 - Mascote: `assets/kamy-mascot.svg`
 - Prévia da ilha: `assets/kamy-island-preview.svg`
