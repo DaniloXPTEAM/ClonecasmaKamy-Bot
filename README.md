@@ -280,7 +280,7 @@ python3 -m venv .venv
 source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
-npm start
+node ./bin/kamy-bot.js
 ```
 
 Para iniciar pelo launcher do projeto:
@@ -395,8 +395,12 @@ source .venv/bin/activate
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 pytest -q
-npm install
-npm test
+node --check bin/kamy-bot.js
+node --check desktop/main.js
+node --check desktop/preload.js
+node --check static/app.js
+node --check static/settings.js
+node --check static/extensions.js
 ```
 
 No Windows PowerShell, ative o ambiente com `.venv\\Scripts\\Activate.ps1`.
