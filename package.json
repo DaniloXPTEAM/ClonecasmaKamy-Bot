@@ -1,12 +1,11 @@
 {
   "name": "kamy-bot",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Kamy Bot — local floating AI companion for desktop",
   "license": "MIT",
-  "engines": {
-    "node": ">=18"
-  },
+  "engines": { "node": ">=18" },
   "bin": {
+    "kamy": "bin/kamy-bot.js",
     "kamy-bot": "bin/kamy-bot.js"
   },
   "files": [
@@ -25,24 +24,9 @@
     "README.md",
     "LICENSE"
   ],
-  "keywords": [
-    "ai",
-    "local-first",
-    "assistant",
-    "desktop",
-    "floating-island",
-    "mcp",
-    "nvidia"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/stylesxzz/Kamy-Bot.git"
-  },
+  "keywords": ["ai", "local-first", "assistant", "desktop", "floating-island", "system-tray", "mcp", "nvidia"],
+  "repository": { "type": "git", "url": "https://github.com/stylesxzz/Kamy-Bot.git" },
   "homepage": "https://github.com/stylesxzz/Kamy-Bot#readme",
-  "bugs": {
-    "url": "https://github.com/stylesxzz/Kamy-Bot/issues"
-  },
-  "optionalDependencies": {
-    "electron": "45.2.1"
-  }
+  "bugs": { "url": "https://github.com/stylesxzz/Kamy-Bot/issues" },
+  "optionalDependencies": { "electron": "45.2.1" }
 }
