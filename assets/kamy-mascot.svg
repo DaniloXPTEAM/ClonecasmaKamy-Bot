@@ -1,18 +1,1 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc">
-<title id="title">Kamy — estrela companheira</title><desc id="desc">Mascote em forma de estrela de quatro pontas nas cores Ivory, Frosted Mint e Malachite.</desc>
-<defs>
- <linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FBFFF2"/><stop offset=".58" stop-color="#E9FFCA"/><stop offset="1" stop-color="#9AFFB8"/></linearGradient>
- <radialGradient id="halo"><stop stop-color="#25E970" stop-opacity=".42"/><stop offset="1" stop-color="#25E970" stop-opacity="0"/></radialGradient>
- <filter id="blur" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="18"/></filter>
- <filter id="shadow" x="-35%" y="-35%" width="170%" height="170%"><feDropShadow dx="0" dy="15" stdDeviation="14" flood-color="#001b08" flood-opacity=".5"/></filter>
-</defs>
-<rect width="512" height="512" rx="112" fill="#022509"/>
-<circle cx="256" cy="256" r="208" fill="url(#halo)" filter="url(#blur)"/>
-<path d="M256 62 C275 62 284 149 320 185 C356 221 443 230 443 256 C443 282 356 291 320 327 C284 363 275 450 256 450 C237 450 228 363 192 327 C156 291 69 282 69 256 C69 230 156 221 192 185 C228 149 237 62 256 62Z" fill="url(#body)" stroke="#FBFFF2" stroke-width="8" stroke-linejoin="round" filter="url(#shadow)"/>
-<path d="M206 236 C206 220 217 209 230 209 C243 209 252 220 252 236 C252 253 243 264 230 264 C217 264 206 253 206 236Z" fill="#022509"/>
-<path d="M260 236 C260 220 271 209 284 209 C297 209 306 220 306 236 C306 253 297 264 284 264 C271 264 260 253 260 236Z" fill="#022509"/>
-<path d="M226 291 C244 307 268 307 286 291" fill="none" stroke="#238926" stroke-width="10" stroke-linecap="round"/>
-<path d="M121 256 C140 263 157 276 168 294 M391 256 C372 263 355 276 344 294" fill="none" stroke="#238926" stroke-opacity=".38" stroke-width="7" stroke-linecap="round"/>
-<path d="M365 105 L374 129 L398 138 L374 147 L365 171 L356 147 L332 138 L356 129Z" fill="#25E970"/>
-<circle cx="147" cy="151" r="7" fill="#FBFFF2" opacity=".9"/>
-</svg>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-labelledby="title desc"><title id="title">Kamy — estrela companheira</title><desc id="desc">Mascote de estrela verde suave sobre fundo claro, com expressão amigável.</desc><defs><linearGradient id="body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFFFFF"/><stop offset=".58" stop-color="#EAF7ED"/><stop offset="1" stop-color="#BFE8CB"/></linearGradient><radialGradient id="halo"><stop stop-color="#20A65A" stop-opacity=".22"/><stop offset="1" stop-color="#20A65A" stop-opacity="0"/></radialGradient><filter id="blur"><feGaussianBlur stdDeviation="18"/></filter><filter id="shadow" x="-35%" y="-35%" width="170%" height="170%"><feDropShadow dx="0" dy="15" stdDeviation="14" flood-color="#17472B" flood-opacity=".16"/></filter></defs><rect width="512" height="512" rx="112" fill="#F4F8F4"/><circle cx="256" cy="256" r="208" fill="url(#halo)" filter="url(#blur)"/><path d="M256 62 C275 62 284 149 320 185 C356 221 443 230 443 256 C443 282 356 291 320 327 C284 363 275 450 256 450 C237 450 228 363 192 327 C156 291 69 282 69 256 C69 230 156 221 192 185 C228 149 237 62 256 62Z" fill="url(#body)" stroke="#B8DCC2" stroke-width="8" stroke-linejoin="round" filter="url(#shadow)"/><ellipse cx="230" cy="236" rx="15" ry="24" fill="#17472B"/><ellipse cx="284" cy="236" rx="15" ry="24" fill="#17472B"/><path d="M226 291 C244 307 268 307 286 291" fill="none" stroke="#23834B" stroke-width="10" stroke-linecap="round"/><path d="M121 256 C140 263 157 276 168 294 M391 256 C372 263 355 276 344 294" fill="none" stroke="#23834B" stroke-opacity=".28" stroke-width="7" stroke-linecap="round"/><path d="M365 105 L374 129 L398 138 L374 147 L365 171 L356 147 L332 138 L356 129Z" fill="#20A65A"/><circle cx="147" cy="151" r="7" fill="#FFFFFF"/></svg>

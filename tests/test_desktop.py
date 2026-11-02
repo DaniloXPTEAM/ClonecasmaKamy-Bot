@@ -123,3 +123,13 @@ def test_desktop_tray_controls_and_optional_disable_are_wired():
     assert "process.argv.includes('--no-tray')" in desktop_main
     assert 'args.includes("--no-tray")' in launcher
     assert "Bandeja do sistema" in readme
+
+
+def test_light_brand_assets_and_readme_preview_are_present():
+    root = PROJECT_ROOT
+    brand = (root / "static" / "brand.css").read_text(encoding="utf-8")
+    readme = (root / "README.md").read_text(encoding="utf-8")
+    assert "color-scheme:light" in brand
+    assert "#f4f7f3" in brand
+    assert "assets/kamy-island-preview.svg" in readme
+    assert (root / "assets" / "kamy-island-preview.svg").exists()
